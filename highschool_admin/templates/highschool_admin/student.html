@@ -68,14 +68,9 @@
                 </li>
                 {% endif %}
                 {% if tab_setting.show_recommendation and record.needs_recommendation %}
-                    {% for data in term_data %}
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#term_rec_{{data.term.id}}"><i
-                                class="fa fa-folder"></i>&nbsp;&nbsp;{{data.term.label}}
-                            {{data.term.year}}
-                            Class(es) Recommendation</a>
-                    </li>
-                    {% endfor %}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#recommendation"><i class="fa fa-folder"></i>&nbsp;&nbsp;Class(es) Recommendation</a>
+                </li>
                 {% endif %}
             </ul>
             
@@ -419,12 +414,10 @@
                     });
                 </script>
                 {% if tab_setting.show_recommendation and record.needs_recommendation %}
-                {% for data in term_data %}
-                <div class="tab-pane" id="term_rec_{{data.term.id}}">
+                <div class="tab-pane" id="recommendation">
                     <div class="card border-top-0">
                         <div class="card-body">
-                            <p class="alert alert-info">Classes for {{data.term.label}}
-                                {{data.term.year}}</p>
+                            <p class="alert alert-info">Rec-eligible class(es)</p>
                             <form action="" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <table class="table table-striped">
@@ -438,7 +431,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {%for registration in data.registrations %}
+                                        {% for registration in recommendation_registrations %}
                                         <tr>
                                             <td>
                                                 {{registration.class_section.course.name}}&nbsp;{{registration.class_section.section_number}}&nbsp; ({{registration.class_section.course.credit_hours}}&nbsp;credits)<br>
@@ -451,7 +444,7 @@
                                             <td>
                                                 {% if registration.status == 'applied' and registration.needs_recommendation %}
                                                 <script>
-                                                    active_term_tab = 'term_rec_{{registration.class_section.term.id}}';
+                                                    active_term_tab = 'recommendation';
                                                 </script>
                                                 <select name="registration_{{registration.id}}"
                                                     id="id_registration_{{registration.id}}" data-key="{{registration.id}}" class="form-control class_recommendation">
@@ -464,7 +457,7 @@
                                             <!-- <td>
                                                 {% if registration.status == 'applied' %}
                                                 <script>
-                                                    active_term_tab = 'term_rec_{{registration.class_section.term.id}}';
+                                                    active_term_tab = 'recommendation';
                                                 </script>
                                                 <select name="registration_pay_type_{{registration.id}}"
                                                     id="id_registration_{{registration.id}}_pay_type" class="form-control pay_type" data-key="{{registration.id}}">
@@ -893,7 +886,7 @@
                     </div>
                 </div>
                 
-                {{data.recommendation_form | crispy}}
+                {{ recommendation_form | crispy }}
 
 
                                 <input type="submit" id="btn_submit_recommendation" class="btn btn-primary"
@@ -901,8 +894,7 @@
                             </form>
                         </div>
                     </div>
-                </div> <!-- end tab #term_rec{{data.term.id}} -->
-                {% endfor %}
+                </div> <!-- end tab #recommendation -->
                 {% endif %}
             </div>
         </div>
