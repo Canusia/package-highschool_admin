@@ -27,6 +27,7 @@ from cis.models.term import AcademicYear
 from cis.models.highschool import HighSchool
 from cis.serializers.note import StudentNoteSerializer
 from cis.serializers.highschool_admin import HSAdministratorPositionSerializer
+from cis.serializers.registration import StudentRegistrationSerializer
 from cis.utils import active_term, registration_terms, HSADMIN_user_only
 from cis.settings.future_sections import future_sections as fs_settings
 from cis.forms.future_sections import (
@@ -181,6 +182,39 @@ class RegistrationViewSet(viewsets.ReadOnlyModelViewSet):
             'reviewer__user'
         )
         return records
+
+
+class StudentRegistrationsTableViewSet(viewsets.ReadOnlyModelViewSet):
+    """DataTables feed for the HS-admin student-detail Class(es) table.
+
+    Returns the shared cis ``StudentRegistrationSerializer`` shape (rendered by
+    myce_tenant_configs/js/registrations_table.js), scoped to the requesting HS
+    admin's high schools and the ``student`` query param. Separate from
+    ``RegistrationViewSet`` (which the students-list page consumes) so its shape
+    can differ without regressing that page.
+    """
+    serializer_class = StudentRegistrationSerializer
+    permission_classes = [HSADMIN_user_only]
+
+    def get_queryset(self):
+        highschools = get_user_highschools(self.request)
+        records = StudentRegistration.objects.filter(
+            student__highschool__in=highschools,
+        )
+        student = self.request.GET.get('student', '').strip()
+        if student:
+            # PT: `student` feeds a UUIDField lookup (Student.id). Reject
+            # non-UUIDs before the ORM (invalid -> empty set, not HTTP 500).
+            try:
+                uuid.UUID(str(student))
+            except (ValueError, AttributeError, TypeError):
+                return StudentRegistration.objects.none()
+            records = records.filter(student__id=student)
+        return records.select_related(
+            'student__user', 'student__highschool',
+            'class_section__course', 'class_section__term',
+            'reviewer__user',
+        )
 
 
 class PendingRecommendationViewSet(viewsets.ReadOnlyModelViewSet):

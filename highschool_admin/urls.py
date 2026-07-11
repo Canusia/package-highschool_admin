@@ -59,6 +59,7 @@ from .views import (
     # API ViewSets
     HSAdminCertificateViewSet,
     RegistrationViewSet,
+    StudentRegistrationsTableViewSet,
     StudentNoteViewSet,
     StudentViewSet,
     PendingRecommendationViewSet,
@@ -76,6 +77,7 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router_viewsets = {
     'registration': RegistrationViewSet,
+    'student-registrations': StudentRegistrationsTableViewSet,
     'student_notes': StudentNoteViewSet,
     'class-section': ClassSectionViewSet,
     'students': StudentViewSet,
