@@ -1,0 +1,26 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}Instructor Course Certificates{% endblock %}
+
+{% block page_header %}
+{{intro|safe}}
+{% include "highschool_admin/partials/_breadcrumb.html" with page_name="Instructor Course Certificates" %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-top-0">
+            <div class="card-body">
+                <p class="alert alert-info">
+                    Below is the list of instructor course certificates for your high school(s).
+                </p>
+                <div class="table-responsive">
+                    {% include credentials_table.partial_template with config=credentials_table %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

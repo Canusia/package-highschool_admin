@@ -1,0 +1,13 @@
+include LICENSE
+include README.md
+include CLAUDE.md
+
+recursive-include highschool_admin/templates *
+recursive-include highschool_admin/staticfiles *
+recursive-include highschool_admin/settings *
+recursive-include highschool_admin/migrations *
+recursive-include highschool_admin/management *
+
+global-exclude *.pyc
+global-exclude *.pyo
+prune **/__pycache__

@@ -1,0 +1,9 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'highschool_admin:dashboard' %}">Home</a></li>
+        {% if parent_page %}
+        <li class="breadcrumb-item"><a href="{{ parent_url }}">{{ parent_page }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-current="page">{{ page_name }}</li>
+    </ol>
+</nav>

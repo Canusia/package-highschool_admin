@@ -1,0 +1,77 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}Transcripts{% endblock %}
+
+{% block page_header %}
+{{intro|safe}}
+{% include "highschool_admin/partials/_breadcrumb.html" with page_name="Transcripts" %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .modal-dialog,
+    .modal-content {
+        height: 90%;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 143px);
+        overflow-y: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Configuration data for JavaScript -->
+<div id="transcripts-config"
+     data-transcripts-url="{% url 'highschool_admin:get_transcripts' %}"
+     style="display: none;"></div>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <div class="tab-pane active" id="transcripts">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of transcript files
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table dataTable" id="tbl_transcripts">
+                                <thead>
+                                    <tr>
+                                        <th>High School</th>
+                                        <th>Uploaded On</th>
+                                        <th>Uploaded By</th>
+                                        <th>Description</th>
+                                        <th>File</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div id='details' class='modal fade' role='dialog' tabindex="-1">
+    <div class='modal-dialog' style="max-width: 90%;">
+        <div class='modal-content'>
+            <div class='modal-body' style="position: relative;">
+                <iframe id='details_src' width='100%' height='100%'
+                    style="position: absolute; height: 98%; width: 97%;" frameborder='0' allowfullscreen></iframe>
+            </div>
+            <div class='modal-footer'>
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'highschool_admin/js/transcripts.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends "highschool_admin/logged-base.html" %}
+{%block title %}{{MYCE_SETTINGS.college_name}} {{MYCE_SETTINGS.cep_name}} Classes{% endblock %}
+
+{% load templatehelpers %}
+
+{% block body %}
+<main>
+    {{intro|safe}}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student:dashboard' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Students</li>
+        </ol>
+    </nav>
+    <div class="row">
+        <div class="col-12">
+            {% if messages %}
+            <ul class="messages list-group mb-4">
+                {% for message in messages %}
+                <li{% if message.tags %} class="list-group-item {{ message.tags }}" {% endif %}>
+                    {{ message }}</li>
+                    {% endfor %}
+            </ul>
+            {% endif %}
+            <ul class="nav nav-tabs d-none">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#pending_recommendation">Pending
+                        Recommendation</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#student_registrations">Registrations by Term</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#students">Students by Term</a>
+                </li>
+            </ul>
+
+
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div class="tab-pane active" id="all_notes">
+                    <div class="row ">
+                        <div class="col-md-12">
+                            <div class="card border-top-0">
+                                <div class="card-body">
+                                    <p class="alert alert-info">
+                                        Below are the notes added to your student records. You can reply to a note.
+                                    </p>
+                                    <div class="table-responsive">
+                                        <table id="records_all" class="table table-striped dt-responsive ">
+                                            <thead>
+                                                <tr>
+                                                    <th data-data="createdon" data-name="createdon">
+                                                        Added On
+                                                    </th>
+                                                    <th data-data="createdby.last_name" data-name="createdby.last_name">
+                                                        Added By
+                                                    </th>
+                                                    <th searchable="1" data-data="student.user.last_name"
+                                                        data-name="student.user.last_name">Last Name</th>
+                                                    <th searchable="1" data-data="student.user.first_name"
+                                                        data-name="student.user.first_name">
+                                                        First Name</th>
+                                                    <th searchable="1" data-data="note" data-name="note">Note
+                                                    </th>
+                                                    <!-- <th data-data="highschool.name" data-name="highschool.name">High School /
+                                                        Reviewer</th> -->
+                                                    <th data-data="ce_url" data-name='ce_url'><span
+                                                            class="sr-only">Actions</span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- end tab #all_notes -->
+            </div>
+        </div>
+</main>
+
+<script>
+    window.closeModal = function () {
+        $('#details').modal('hide');
+    };
+
+    $(document).ready(function () {
+        $('#records_all thead tr').clone(true).appendTo('#records_all thead');
+        $('#records_all thead tr:eq(1) th').each(function (i) {
+            if ($(this).attr('searchable') != '1') {
+                $(this).html('')
+            } else {
+                var title = $(this).text();
+                $(this).html('<input type="text" class="form-control" placeholder="Search ' + title + '" />');
+
+                $('input', this).on('keyup change', function () {
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+        });
+
+        let baseURL = '{{api_url}}'
+
+        $(document).on("change", "form.filter :input", function () {
+            load_data();
+        })
+
+        function load_data() {
+            let form = $('form.filter')
+            let newURL = baseURL + '&' + $(form).serialize();
+
+            table.ajax.url(newURL).load()
+        }
+
+        var table = $('#records_all').DataTable(
+            {
+                'orderCellsTop': true,
+                'fixedHeader': true,
+                ajax: '{{api_url}}&' + $('form.filter').serialize(),
+                serverSide: true,
+                processing: true,
+                // stateSave: true,
+                language: {
+                    'loadingRecords': '&nbsp;',
+                },
+                'lengthMenu': [30, 50, 100],
+                'order': [
+                    [0, 'desc']
+                ],
+                'columns': [
+                    {
+                        'render': function (data, type, row, meta) {
+                            let note_type = ''
+                            if (row.meta !== null) {
+                                note_type = row.meta.type
+                            }
+
+                            return row.createdon
+                        }
+                    },
+                    {
+                        'render': function (data, type, row, meta) {
+                            return row.createdby.first_name + ' ' + row.createdby.last_name
+                        }
+                    },
+                    {
+                        'render': function (data, type, row, meta) {
+                            let consent_status = ''
+
+                            return row.student.user.last_name + '<br>' + '@ ' + "<span class='text-muted'>" + row.student.highschool.name + "</span>"
+                        }
+                    },
+                    {
+                        'render': function (data, type, row, meta) {
+                            return row.student.user.first_name;
+                        }
+                    },
+                    {
+                        'render': function (data, type, row, meta) {
+                            let note = row.note
+                            if (row.media !== null) {
+                                note += '<br><br>' + "<a target='_blank' href='" + row.media + "' class='btn btn-sm btn-primary'>View Attachment</a>";
+                            }
+
+                            return note
+                        }
+                    },
+                    {
+                        'searchable': false,
+                        'orderable': false,
+                        'render': function (data, type, row, meta) {
+                            return "<div class=\"dropdown show \"><a class=\"btn btn-primary dropdown-toggle btn-sm\" href=\"#\" role=\"button\" id=\"dropdownMenuLink\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">Actions&nbsp;</a><div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuLink\">    <a class=\"dropdown-item ajax-add_new\" data-parent=\"" + row.id + "\" data-id=\"-1\" data-modal=\"modal-add_new\" data-model=\"student_replynote\" href=\"#\">Reply to Note</a>    <a class=\"dropdown-item details\" href=\"/highschool_admin/student/" + row.student.id + "\">Student Details</a>      </div></div>";
+                        }
+                    }
+                ]
+            }
+        );
+
+        $(document).on('click', 'a.details', function () {
+            var src = $(this).attr('href');
+
+            $("#details_src").attr('src', src);
+            $('#details').modal('show');
+            return false;
+        });
+
+        $("#details").on('hide.bs.modal', function () {
+            $("#details_src").attr('src', '');
+            table.ajax.reload(null, false);
+        })
+    });
+</script>
+
+<script>
+
+    window.closeModal = function () {
+      $('#details').modal('hide');
+    };
+
+    jQuery(function ($) {
+
+      $(document).on("submit", ".modal-content form", function (event) {
+        let ajaxurl = "{% url 'cis:add_new_ajax' %}"
+
+        if ($("input[name='action']").val() == "not-teaching-section")
+          return;
+
+        if ($("input[name='action']").val() == "teaching-section")
+          return;
+
+        var form = this
+        var formData = new FormData(this)
+        
+        event.preventDefault();
+        $.ajax({
+          type: "POST",
+          url: ajaxurl,
+          data: formData, // $(".modal-content form").serialize(),
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            if (response.status == 'error') {
+              $(".modal-content .form_status").html("<p class='alert alert-danger'>" + response.message + "</p>");
+            } else {
+              $(".modal-content .form_status").html("<p class='alert alert-success'>" + response.message + "</p>");
+
+              if (response.action == 'reload') {
+                location.reload();
+              } else {
+                //add new record to list
+                $("#" + updater).append("<option selected value='" + response.new_record_id + "'>" + response.new_record_name + "</option>")
+                $("#" + modal).modal('hide');
+              }
+            }
+          },
+          error: function (response) {
+            alert('There was an error submitting the form');
+          }
+        });
+        event.preventDefault();
+      });
+
+      $(document).on("click", ".ajax-add_new", function () {
+
+        updater = $(this).attr("data-updater")
+        let ajaxurl = "{% url 'cis:add_new_ajax' %}"
+        modal = $(this).attr("data-modal")
+
+        let data = {
+          'model': $(this).attr('data-model'),
+          'ajax': 1,
+          'parent': $(this).attr("data-parent"),
+          'id': $(this).attr("data-id")
+        }
+
+        $.blockUI();
+        $.ajax({
+          type: "GET",
+          url: ajaxurl,
+          data: data,
+          success: function (response) {
+            $("#modal_content").html(response);
+            $("#" + modal).modal('show');
+
+            $.unblockUI();
+          },
+          error: function (response) {
+            alert(response);
+          }
+        });
+      })
+    });
+  </script>
+
+<style>
+    .modal-dialog,
+    .modal-content {
+        /* 80% of window height */
+        height: 90%;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 143px);
+        overflow-y: none;
+    }
+</style>
+<div id='details' class='modal fade' role='dialog' tabindex="-1">
+    <div class='modal-dialog' style="max-width: 90%;">
+        <div class='modal-content'>
+            <div class='modal-body' style="position: relative;">
+                <iframe id='details_src' width='100%' height='100%'
+                    style="position:  absolute; height: 98%; width: 97%;" frameborder='0' allowfullscreen></iframe>
+            </div>
+
+            <div class='modal-footer'>
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

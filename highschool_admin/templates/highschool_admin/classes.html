@@ -1,0 +1,75 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}Classes{% endblock %}
+
+{% block page_header %}
+{{intro|safe}}
+{% include "highschool_admin/partials/_breadcrumb.html" with page_name="Classes" %}
+{% endblock %}
+
+{% block content %}
+<!-- Configuration data for JavaScript -->
+<div id="classes-config"
+     data-classes-api="{{classes_api}}"
+     style="display: none;"></div>
+
+<ul class="nav nav-tabs d-none">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#classes_available">Assigned Class(es)</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <div class="tab-pane active" id="classes_available">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive1">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card">
+                                <div class="card-body bg-gray-200">
+                                    <form id="class_section_filter" class="form-inline float-right filter">
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <div class="float-right">
+                                                    <select class="form-control mt-2" name="term">
+                                                        <option value="-1">Filter By Term</option>
+                                                        {% for c in terms %}
+                                                        <option value="{{c.id}}"
+                                                            {% if c.id == active_term.id %} selected
+                                                            {% endif %}>{{c.label}} {{c.year}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table id="records_classes" class="table table-striped" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th data-data="term.code" data-name="term.code">Term</th>
+                                <th data-data="course.title" data-name="course.title">SHU Course</th>
+                                <th data-data="highschool_course_name" data-name="highschool_course_name">High School Course</th>
+                                <th data-data="teacher.user.last_name" data-name="teacher.user.last_name">Instructor</th>
+                                <th data-name="class_number" data-data="class_number">CRN</th>
+                                <th data-name="roster_status" data-data="roster_status">Roster Status</th>
+                                <th data-name="status" data-data="status">Status</th>
+                                <th data-data="id" data-name='id'><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'highschool_admin/js/classes.js' %}"></script>
+{% endblock %}

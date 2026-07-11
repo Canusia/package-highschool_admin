@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  {% load static %}
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+    integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css'%}">
+  <link rel="stylesheet" href="{% static 'css/style.css'%}">
+
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+
+  <script src="{% static 'js/sb-admin-2.min.js'%}"></script>
+
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.datatables.net/v/bs4/dt-1.10.18/r-2.2.2/datatables.min.css" />
+  <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/r-2.2.2/datatables.min.js"></script>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.standalone.min.css">
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
+
+    <link rel='stylesheet' id='bootstrap-swa-css'  href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.css?ver=4.9.13' type='text/css' media='all' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js" integrity="sha256-JirYRqbf+qzfqVtEE4GETyHlAbiCpC005yBTa4rj6xg=" crossorigin="anonymous"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <script>
+    jQuery(document).ready(function ($) {
+      $("#sidebarToggle").on("click", function () {
+        let toggled = $('body ul.sidebar').hasClass('toggled')
+        Cookies.set('mycis_sidebar_toggled', toggled);
+      });
+
+      if (Cookies.get('mycis_sidebar_toggled') == 'true') {
+        $("ul.sidebar div.collapse").removeClass('show')
+      }
+
+      $(document).ready(function () {
+        // show active tab on reload
+        if (location.hash !== '') $('a[href="' + location.hash + '"]').tab('show');
+
+        // remember the hash in the URL without jumping
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+          if (history.pushState) {
+            history.pushState(null, null, '#' + $(e.target).attr('href').substr(1));
+          } else {
+            location.hash = '#' + $(e.target).attr('href').substr(1);
+          }
+        });
+      });
+
+    });
+
+  </script>
+  <title>{% block title %}123{% endblock %}</title>
+</head>
+
+<body class="bg-light ">
+  <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+  <div id="wrapper">
+    
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+          <!-- Page Heading -->
+          <div class="">
+          {% block body %}
+          Body content
+          {% endblock %}
+        </div>
+
+        </div> <!-- end container-fluid -->
+
+      </div> <!-- end #content -->
+
+    </div> <!-- end #content-wrapper -->
+  </div> <!-- end #wrapper -->
+
+
+  <script>
+    jQuery(function ($) {
+      $("table.dataTable").dataTable()
+
+      $(function () {
+        $('[data-toggle="popover"]').popover({ html: true, trigger: 'hover' })
+      })
+    });
+  </script>
+
+</body>
+
+</html>

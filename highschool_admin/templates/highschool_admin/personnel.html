@@ -1,0 +1,107 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}School Personnel{% endblock %}
+
+{% block page_header %}
+{{intro|safe}}
+{% include "highschool_admin/partials/_breadcrumb.html" with page_name="School Personnel" %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .modal-dialog,
+    .modal-content {
+        height: 90%;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 143px);
+        overflow-y: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#active">Currently Active</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#inactive">Inactive</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <div class="tab-pane active" id="active">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of active personnel.
+                        </p>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table dataTable table-striped" id="tbl_active">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>High School</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane" id="inactive">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of inactive personnel.
+                        </p>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table dataTable table-striped" id="tbl_inactive">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>High School</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div id='details' class='modal fade' role='dialog' tabindex="-1">
+    <div class='modal-dialog' style="max-width: 90%;">
+        <div class='modal-content'>
+            <div class='modal-body' style="position: relative;">
+                <iframe id='details_src' width='100%' height='100%'
+                    style="position: absolute; height: 98%; width: 97%;" frameborder='0' allowfullscreen></iframe>
+            </div>
+            <div class='modal-footer'>
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'highschool_admin/js/personnel.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,981 @@
+{% extends "cis/logged-base-modal.html" %}
+{%block title %}{{MYCE_SETTINGS.college_name}} {{MYCE_SETTINGS.cep_name}} Classes{% endblock %}
+
+{% load templatehelpers %}
+
+{% load crispy_forms_tags %}
+{% block body %}
+<main>
+    <script>
+        jQuery(document).ready(function ($) {
+            if (window.location.hash == '') {
+                // $('.nav-tabs a:last').tab('show')
+            }
+        })
+    </script>
+    {{intro|safe}}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Home</li>
+            <li class="breadcrumb-item">All Student</li>
+            <li class="breadcrumb-item active" aria-current="page">{{record.user.first_name}} {{record.user.last_name}}
+            </li>
+        </ol>
+    </nav>
+    <div class="row">
+        <div class="col-12">
+            {% if messages %}
+            <ul class="messages list-group mb-4">
+                {% for message in messages %}
+                <li{% if message.tags %} class="list-group-item {{ message.tags }}" {% endif %}>
+                    {{ message }}</li>
+                    {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <style>
+            div.profile span.profile_label {
+                text-transform: uppercase;
+                font-size: 0.7em;
+            }
+        </style>
+        <div class="col-md-12">
+
+            <p class="alert alert-info">Click on the tabs to see details</p>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#details"><i
+                            class="fa fa-user"></i>&nbsp;&nbsp;Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#classes"><i
+                            class="fa fa-list"></i>&nbsp;&nbsp;Class(es)</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#notes"><i class="fa fa-edit"></i>&nbsp;&nbsp;Notes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#support_docs"><i class="fa fa-file-upload"></i>&nbsp;&nbsp;Supporting Documents</a>
+                </li>
+                {% if tab_setting.show_pay_type %}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#pay_type"><i class="fa fa-dollar-sign"></i>&nbsp;&nbsp;Pay Type</a>
+                </li>
+                {% endif %}
+                {% if tab_setting.show_review %}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#review"><i class="fa fa-clipboard-check"></i>&nbsp;&nbsp;Review</a>
+                </li>
+                {% endif %}
+                {% if tab_setting.show_recommendation and record.needs_recommendation %}
+                    {% for data in term_data %}
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#term_rec_{{data.term.id}}"><i
+                                class="fa fa-folder"></i>&nbsp;&nbsp;{{data.term.label}}
+                            {{data.term.year}}
+                            Class(es) Recommendation</a>
+                    </li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+            
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div class="tab-pane" id="classes">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card border-top-0">
+                                <div class="card-body">
+                                    <p class="alert alert-info">
+                                        Below is the list of student's class(es)
+                                    </p>
+                                    <div class="table-responsive">
+                                        <script>
+                                            jQuery(document).ready(function ($) {
+                                                $('#student_classes').DataTable(
+                                                    {
+                                                        'lengthMenu': [30, 50, 100],
+                                                        'order': [[0, 'desc']],
+                                                        dom: 'B<"float-left mt-3 mb-3"l><"float-right mt-3"f><"row clear">rt<"row"<"col-6"i><"col-6 float-right"p>>',
+                                                        buttons: [
+                                                            {
+                                                                extend: 'csv', className: 'btn btn-sm btn-primary text-white text-light',
+                                                                text: '<i class="fas fa-file-csv text-white"></i>&nbsp;CSV',
+                                                                titleAttr: 'Export Records in current View to CSV' 
+                                    },
+                                    { 
+                                        extend: 'print', className: 'btn btn-sm btn-primary text-white text-light',
+                                        text: '<i class="fas fa-print text-white"></i>&nbsp;Print',
+                                        titleAttr: 'Print Records in Current View' 
+                                    }],
+                                                        }
+                                                );
+                                            });
+                                        </script>
+                                        <table class="table table-striped" id="student_classes">
+                                            <thead>
+                                                <tr>
+                                                    <th>Term</th>
+                                                    <th>Course</th>
+                                            <th width='30%'>Course Info.</th>
+                                            <th>Instructor</th>
+                                            <th>Status</th>
+                                            <th>Pay Type</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {% for registration in classes %}
+                                                <tr>
+                                                    <td>{{registration.class_section.term}}</td>
+                                                    <td>
+                                                        {{registration.class_section.course.name}}&nbsp;{{registration.class_section.section_number}}&nbsp; ({{registration.class_section.course.credit_hours}}&nbsp;credits)<br>
+                                                        <span class='text-muted'>{{registration.class_section.course.title}}</span><br><span class=''>CRN&nbsp;{{registration.class_section.class_number}}</span>
+                                                    </td>
+                                                    <td>{{registration.class_section.schedule|safe}}<br><small>{{registration.class_section.course.sexy_description|safe}}</small></td>
+                                                    <td>{{registration.class_section.teacher}}</td>
+                                                    
+                                                    <td>{{registration.sexy_status}}</td>
+                                                    <td>{{registration.pay_type_pretty}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- end tab #classes -->
+
+                {% if tab_setting.show_pay_type %}
+                <div class="tab-pane" id="pay_type">
+                    <div class="card border-top-0"><div class="card-body">
+                        <p class="alert alert-info">Pay type for this student's registrations.</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead><tr><th>Term</th><th>Course</th><th>Status</th><th>Pay Type</th></tr></thead>
+                                <tbody>
+                                    {% for registration in classes %}
+                                    <tr>
+                                        <td>{{registration.class_section.term}}</td>
+                                        <td>{{registration.class_section.course.name}}&nbsp;{{registration.class_section.section_number}}</td>
+                                        <td>{{registration.sexy_status}}</td>
+                                        <td>{{registration.pay_type_pretty|default:"—"}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div></div>
+                </div>
+                {% endif %}
+
+                {% if tab_setting.show_review %}
+                <div class="tab-pane" id="review">
+                    <div class="card border-top-0"><div class="card-body">
+                        <p class="alert alert-info">Application review status for this student.</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead><tr><th>Term</th><th>Course</th><th>Status</th><th>Next Step</th></tr></thead>
+                                <tbody>
+                                    {% for registration in classes %}
+                                    <tr>
+                                        <td>{{registration.class_section.term}}</td>
+                                        <td>{{registration.class_section.course.name}}&nbsp;{{registration.class_section.section_number}}</td>
+                                        <td>{{registration.sexy_status}}</td>
+                                        <td>{{registration.next_step}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div></div>
+                </div>
+                {% endif %}
+
+                <div class="tab-pane active" id="details">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card border-top-0">
+                                <div class="card-body">
+                                    {{record.asHTML|safe}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- end tab #details -->
+
+                <div class="tab-pane" id="notes">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card border-top-0">
+                                <div class="card-body">
+                                    <p class="alert alert-info">
+                                        Below are notes shared with you.
+                                    </p>
+                                    <script>
+                                        jQuery(document).ready(function ($) {
+                                
+                                            $('.dateinput').mask('00/00/0000');
+                                            $(".dateinput").datepicker()
+                                
+                                            if (window.location.hash == '') {
+                                                // $('.nav-tabs a:last').tab('show')
+                                            }
+                                
+                                            $(".scores_controller").change(function() {
+                                                let obj = this
+                                                let value = $(obj).val()
+                                
+                                                if($(obj).is(':checked')) {
+                                                    $("div#scores_container_"+value).removeClass('d-none')
+                                                } else {
+                                                    $("div#scores_container_"+value).addClass('d-none')
+                                                }
+                                            })
+                                
+                                            $(".masked").each(function(index) {
+                                                $(this).mask($(this).attr('mask-format'))
+                                
+                                                let min_val = $(this).attr('data-min')
+                                                let max_val = $(this).attr('data-max')
+                                
+                                                $(this).attr('placeholder', min_val + ' - ' + max_val)
+                                            })
+                                
+                                            $(".validate").on('change', function() {
+                                                let min_val = parseInt($(this).attr('data-min'))
+                                                let max_val = parseInt($(this).attr('data-max'))
+                                
+                                                let val = parseInt($(this).val())
+                                
+                                                if(val) {
+                                                    if(val < min_val || val > max_val) {
+                                                        $(this).addClass('alert-danger border-danger ')
+                                                    } else {
+                                                        $(this).removeClass('alert-danger border-danger')
+                                                    }
+                                                }
+                                            })
+                                
+                                            var has_errors = false;
+                                            $( "form.frm_recommendation" ).submit(function() {
+                                                
+                                                $(".validate").each(function(index) {
+                                                    if($(this).hasClass('alert-danger'))
+                                                        has_errors = true
+                                                });
+                                
+                                                if( has_errors) {
+                                                    alert("Please correct the errors and try again")
+                                                    event.preventDefault()
+                                                    return false;
+                                                } else {
+                                                    return true;
+                                                }
+                                            })
+                                        })
+                                    </script>
+                                    <script>
+
+                                        jQuery(document).ready(function () {
+                                            $(document).on("click", ".ajax-add_new", function () {
+
+                                                updater = $(this).attr("data-updater")
+                                                let ajaxurl = "{% url 'cis:add_new_ajax' %}"
+                                                modal = $(this).attr("data-modal")
+
+                                                let data = {
+                                                    'model': $(this).attr('data-model'),
+                                                    'ajax': 1,
+                                                    'parent': $(this).attr("data-parent"),
+                                                    'id': $(this).attr("data-id")
+                                                }
+
+                                                $.ajax({
+                                                    type: "GET",
+                                                    url: ajaxurl,
+                                                    data: data,
+                                                    success: function (response) {
+                                                        $("#modal_content").html(response);
+                                                        $("#" + modal).modal('show');
+                                                    },
+                                                    error: function (response) {
+                                                        alert(response);
+                                                    }
+                                                });
+                                            })
+                                            $('#student_notes').DataTable(
+                                                {
+                                                    'lengthMenu': [30, 50, 100],
+                                                    'order': [[0, 'desc']],
+
+                                            dom: 'B<"float-left mt-3 mb-3"l><"float-right mt-3"f><"row clear">rt<"row"<"col-6"i><"col-6 float-right"p>>',
+                                buttons: [
+                                    {
+                                        extend: 'csv', className: 'btn btn-sm btn-primary text-white text-light',
+                                        text: '<i class="fas fa-file-csv text-white"></i>&nbsp;CSV',
+                                        titleAttr: 'Export Records in current View to CSV' 
+                                    },
+                                    { 
+                                        extend: 'print', className: 'btn btn-sm btn-primary text-white text-light',
+                                        text: '<i class="fas fa-print text-white"></i>&nbsp;Print',
+                                        titleAttr: 'Print Records in Current View' 
+                                    }],
+                                                    'columns': [
+                                                        {
+                                                            'searchable': false,
+                                                        },
+                                                        {
+                                                            'render': function (data, type, row, meta) {
+                                                                let note = row.note
+                                                                if (row.media !== null) {
+                                                                    note += '<br><br>' + "<a target='_blank' href='" + row.media + "' class='btn btn-sm btn-primary'>View Attachment</a>";
+                                                                }
+
+                                                                return note
+                                                            }
+                                                        },
+                                                        {
+                                                            'render': function (data, type, row, meta) {
+                                                                return row.createdby.last_name + ", " +
+                                                                    row.createdby.first_name
+                                                            }
+                                                        },
+                                                        {
+                                                            'orderable': false,
+                                                            'searchable': false,
+                                                            'render': function (data, type, row, meta) {
+                                                                return "<a class=\"btn btn-sm btn-primary ajax-add_new\" data-parent=\"" + row.id + "\" data-id=\"-1\" data-modal=\"modal-add_new\" data-model=\"student_replynote\" href=\"#notes\">Reply to Note</a>";
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            );
+                                        });
+
+                                    </script>
+                                    <div class="table-responsive">
+                                        <table id="student_notes" class="table table-striped responsive"
+                                            style="width:100%" data-server-side="true" data-ajax="{{notes_api_url}}">
+                                            <thead>
+                                                <tr>
+                                                    <th data-data="createdon" data-name="createdon">Added On
+                                                    </th>
+                                                    <th data-data="note" data-name="note">Note
+                                                    </th>
+                                                    <th data-data="createdby.last_name" data-name="createdby.last_name">
+                                                        Added By
+                                                    </th>
+                                                    <th data-data="id" data-name="id"></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div> <!-- end table-responsive -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="support_docs">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card border-top-0">
+                                <div class="card-body">
+                                    <p class="alert alert-info">
+                                        Upload supporting documents (transcripts, test scores, etc.)
+                                        for this student.
+                                    </p>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Type</th>
+                                                    <th>Note</th>
+                                                    <th>Uploaded</th>
+                                                    <th>File</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for doc in support_docs %}
+                                                <tr>
+                                                    <td>{{ doc.document_type|default:"&mdash;" }}</td>
+                                                    <td>{{ doc.description|default:"" }}</td>
+                                                    <td>{{ doc.uploaded_on|date:"m/d/Y" }}</td>
+                                                    <td><a href="{{ doc.media.url }}" target="_blank">{{ doc.filename }}</a></td>
+                                                    <td>
+                                                        <form action="" method="post" onsubmit="return confirm('Delete this document?');" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="delete_support_doc">
+                                                            <input type="hidden" name="id" value="{{ doc.id }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr><td colspan="5" class="text-muted">No supporting documents uploaded yet.</td></tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <hr>
+                                    <h5 class="card-title">Upload File</h5>
+                                    <form action="" enctype="multipart/form-data" method="post">
+                                        {% csrf_token %}
+                                        {{ support_doc_form|crispy }}
+                                        <input type="submit" class="btn btn-primary btn-sm" value="Upload File">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    var active_term_tab = '';
+                    jQuery(document).ready(function ($) {
+                        if (window.location.hash == '' && active_term_tab != '') {
+                            $('.nav-tabs a[href="#' + active_term_tab + '"]').tab('show');
+                        }
+
+                        // when class_recommendation is changed, if not approved hide corresponding payment type
+                        $(".class_recommendation").change(function() {
+                            let obj = this
+                            let registration_id = $(obj).attr('data-key')
+
+                            if($(obj).val() == 'approved') {
+                                // $("div#id_"+registration_id + "_funding_type").removeClass('d-none');
+
+                                $("#id_registration_"+registration_id + "_pay_type").show()
+                                $("#id_registration_"+registration_id + "_pay_type").focus()
+                            } else {
+                                $("#id_registration_"+registration_id + "_pay_type").hide()
+                                
+                                $("#id_"+registration_id + "_non_student_pay_amount").addClass('d-none');
+                            }
+                        })
+                        
+                        $(".pay_type").change(function() {
+                            let obj = this
+                            let registration_id = $(obj).attr('data-key')
+                            if($(obj).val() == 'school_partial') {
+                                // $("div#id_"+registration_id + "_funding_type").removeClass('d-none');
+
+                                $("#id_"+registration_id + "_non_student_pay_amount").removeClass('d-none');
+                                $("#id_"+registration_id + "_non_student_pay_amount").focus()
+                            } else {
+                                $("#id_"+registration_id + "_non_student_pay_amount").addClass('d-none');
+                            }
+                        })
+
+
+                    });
+                </script>
+                {% if tab_setting.show_recommendation and record.needs_recommendation %}
+                {% for data in term_data %}
+                <div class="tab-pane" id="term_rec_{{data.term.id}}">
+                    <div class="card border-top-0">
+                        <div class="card-body">
+                            <p class="alert alert-info">Classes for {{data.term.label}}
+                                {{data.term.year}}</p>
+                            <form action="" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Course</th>
+                                            <th>Instructor</th>
+                                            <th>Status</th>
+                                            <th >Recommendation</th>
+                                            <!-- <th width='20%'>Payment Type</th> -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {%for registration in data.registrations %}
+                                        <tr>
+                                            <td>
+                                                {{registration.class_section.course.name}}&nbsp;{{registration.class_section.section_number}}&nbsp; ({{registration.class_section.course.credit_hours}}&nbsp;credits)<br>
+                                                <span class='text-muted'>{{registration.class_section.course.title}}</span><br><span class=''>CRN&nbsp;{{registration.class_section.class_number}}</span><br>
+                                                <small>{{registration.class_section.course.registration_eligibility_sexy}}</small>
+                                            </td>
+                                            <td>{{registration.class_section.teacher}}<br>@{{registration.class_section.highschool.name}}</td>
+                                            
+                                            <td>{{registration.sexy_status}}</td>
+                                            <td>
+                                                {% if registration.status == 'applied' and registration.needs_recommendation %}
+                                                <script>
+                                                    active_term_tab = 'term_rec_{{registration.class_section.term.id}}';
+                                                </script>
+                                                <select name="registration_{{registration.id}}"
+                                                    id="id_registration_{{registration.id}}" data-key="{{registration.id}}" class="form-control class_recommendation">
+                                                    <option value="">Select</option>
+                                                    <option value='approved'>Approved</option>
+                                                    <option value="not_approved">Not Approved</option>
+                                                </select>
+                                                {% endif %}
+                                            </td>
+                                            <!-- <td>
+                                                {% if registration.status == 'applied' %}
+                                                <script>
+                                                    active_term_tab = 'term_rec_{{registration.class_section.term.id}}';
+                                                </script>
+                                                <select name="registration_pay_type_{{registration.id}}"
+                                                    id="id_registration_{{registration.id}}_pay_type" class="form-control pay_type" data-key="{{registration.id}}">
+                                                    <option value="">Select</option>
+                                                    <option value='student'>Student Pay</option>
+                                                    <option value='school_full'>School Full Pay</option>
+                                                    <option value='school_partial'>School Partial Pay</option>
+                                                </select><br>
+                                                <input type="number" name="registration_non_student_pay_amount_{{registration.id}}"
+                                                    id="id_{{registration.id}}_non_student_pay_amount" class="form-control d-none non_student_pay_amount"
+                                                    placeholder="School Paying Amount" value=""><br>
+                                                {% else %}
+                                                {{registration.pay_type_pretty|default:""}}<br>
+                                                    {% if registration.non_student_pay_amount %}
+                                                        ${{registration.non_student_pay_amount|floatformat:2}}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td> -->
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                <div class="alert alert-info d-none">
+                    Please select the test(s) that you want to enter scores. Please be aware that not all tests are accepted as pre-reqs for both math and English. Please review our course guide for details on what test scores are accepted for each discipline.” 
+                    <div class="row">
+                        <div class="col">
+                            <div class="mt-2 d-none">
+                                <input {% if data.test_date.accuplacer %}checked{% endif %} class="scores_controller" value="accuplacer" type="checkbox" name="scores" id="id_scores_accuplacer">&nbsp;<label for="id_scores_accuplacer">Accuplacer English</label>
+                            </div>
+
+                            <div class="mt-2">
+                                <input {% if data.test_date.accuplacer_math %}checked{% endif %} class="scores_controller" value="accuplacer_math" type="checkbox" name="scores" id="id_scores_accuplacer_math">&nbsp;<label for="id_scores_accuplacer_math">Accuplacer Math</label>
+                            </div>
+
+                            <div class="d-none">
+                                <input {% if data.test_date.accuplacer_ng %}checked{% endif %}  class="scores_controller" value="accuplacer_ng" type="checkbox" name="scores" id="id_scores_accuplacer_ng">&nbsp;<label for="id_scores_accuplacer_ng">Accuplacer NG - English</label>
+                            </div>
+
+                            <div>
+                                <input {% if data.test_date.accuplacer_ng_math %}checked{% endif %}  class="scores_controller" value="accuplacer_ng_math" type="checkbox" name="scores" id="id_scores_accuplacer_ng_math">&nbsp;<label for="id_scores_accuplacer_ng_math">Accuplacer NG - Math</label>
+                            </div>
+                            
+                            <div>
+                                <input {% if data.test_date.aleks %}checked{% endif %}  class="scores_controller" value="aleks" type="checkbox" name="scores" id="id_scores_aleks">&nbsp;<label for="id_scores_aleks">Aleks</label>
+                            </div>
+
+                            <div class="">
+                                <input {% if data.test_date.ap %}checked{% endif %} class="scores_controller" value="ap" type="checkbox" name="scores" id="id_scores_ap">&nbsp;<label for="id_scores_ap">AP English</label>
+                            </div>
+
+                            <div class="">
+                                <input {% if data.test_date.ap_math %}checked{% endif %} class="scores_controller" value="ap_math" type="checkbox" name="scores" id="id_scores_ap_math">&nbsp;<label for="id_scores_ap_math">AP Math</label>
+                            </div>
+
+                        </div>
+
+                        <div class="col">
+
+                            <div class="mt-2 d-none">
+                                <input {% if data.test_date.act_english %}checked{% endif %}  class="scores_controller" value="act_english" type="checkbox" name="scores" id="id_scores_act_english">&nbsp;<label for="id_scores_act_english">ACT English</label>
+                            </div>
+
+                            <div class="mt-2">
+                                <input {% if data.test_date.hlib %}checked{% endif %}  class="scores_controller" value="hl_ib" type="checkbox" name="scores" id="id_scores_hl_ib">&nbsp;<label for="id_scores_hl_ib">HL IB English</label>
+                            </div>
+                            <div>
+                                <input {% if data.test_date.hlib_math %}checked{% endif %}  class="scores_controller" value="hl_ib_math" type="checkbox" name="scores" id="id_scores_hl_ib_math">&nbsp;<label for="id_scores_hl_ib_math">HL IB Mathematics</label>
+                            </div>
+                            <div>
+                                <input {% if data.test_date.mpt %}checked{% endif %}  class="scores_controller" value="mpt" type="checkbox" name="scores" id="id_scores_mpt">&nbsp;<label for="id_scores_mpt">MPT</label>
+                            </div>
+                            
+                            <div class="">
+                                <input {% if data.test_date.sat %}checked{% endif %}  class="scores_controller" value="sat" type="checkbox" name="scores" id="id_scores_sat">&nbsp;<label for="id_scores_sat">SAT Evidence Based Reading and Writing</label>
+                            </div>
+
+                            <div class="">
+                                <input {% if data.test_date.sat_reading %}checked{% endif %}  class="scores_controller" value="sat_reading" type="checkbox" name="scores" id="id_scores_sat_reading">&nbsp;<label for="id_scores_sat_reading">SAT Writing & Language plus Reading</label>
+                            </div>
+
+                            <div class="">
+                                <input {% if data.test_date.sat_old %}checked{% endif %}  class="scores_controller" value="sat_old" type="checkbox" name="scores" id="id_scores_sat_old">&nbsp;<label for="id_scores_sat_old">SAT (old)</label>
+                            </div>
+                    
+                            <div class="">
+                                <input {% if data.test_date.smarter_balance %}checked{% endif %}  class="scores_controller" value="smarter_balance" type="checkbox" name="scores" id="id_scores_smarter_balance">&nbsp;<label for="id_scores_smarter_balance">Smarter Balance</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                               
+                <div class="form-group">                   
+                    <!-- <div class="col">
+                    <div class="row form-group bg-gradient-primary text-white">
+                        <div class="col p-2">Test</div>
+                        <div class="col p-2">Test Date</div>
+                        <div class="col p-2">English Score(s)</div>
+                        <div class="col p-2">Math Score(s)</div>
+                    </div> -->
+
+                    <div class="row d-none form-group border-bottom mb-2 pb-2 {% if not data.test_date.accuplacer %}d-none{% endif %} d-none" id="scores_container_accuplacer">
+                        <div class="col">
+                            Accuplacer English
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="accuplacer[test_date]"  class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.accuplacer %}{{data.test_date.accuplacer}}{% endif %}">
+                        </div>
+                        <div class="col form-group">
+                            <label for="#">Reading Comprehension</label>
+                            <input type="text" id="accuplacer_reading" name="accuplacer[reading]" mask-format="000" data-min="0" data-max="120" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.accuplacer_reading %}{{data.english_scores.accuplacer_reading}}{% endif %}">
+                            <br>
+                            <label for="#">Writeplacer</label>
+                                <input type="text" name="accuplacer[writeplacer]" class="form-control masked validate" data-min="0" data-max="120" mask-format="000" placeholder=""
+                                    value="{% if data.english_scores.accuplacer_writeplacer %}{{data.english_scores.accuplacer_writeplacer}}{% endif %}">
+                        </div>
+                        <div class="col">
+                        </div>                        
+                    </div>
+
+                    <div class="row d-none form-group border-bottom mb-2 pb-2 {% if not data.test_date.accuplacer_math %}d-none{% endif %}" id="scores_container_accuplacer_math">
+                        <div class="col">
+                            Accuplacer Math
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="accuplacer_math[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.accuplacer_math %}{{data.test_date.accuplacer_math}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>
+                        <div class="col">
+                            <label for="#">Arithmetic</label>
+                            <input type="text"  mask-format="000" data-min="0" data-max="120" name="accuplacer_math[arithmetic]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.accuplacer_math_arithmetic %}{{data.math_scores.accuplacer_math_arithmetic}}{% endif %}"><br>
+                                <label for="#">College Math</label>
+                            <input type="text"  mask-format="000" data-min="0" data-max="120" name="accuplacer_math[college_math]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.accuplacer_math_college_math %}{{data.math_scores.accuplacer_math_college_math}}{% endif %}"><br>
+                                <label for="#">Elementary Algebra</label>
+                            <input type="text" mask-format="000" data-min="0" data-max="120" name="accuplacer_math[elementary_algebra]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.accuplacer_math_elementary_algebra %}{{data.math_scores.accuplacer_math_elementary_algebra}}{% endif %}">
+                                
+                        </div>                        
+                    </div>
+
+                    <div class="row d-none form-group border-bottom mb-2 pb-2 {% if not data.test_date.accuplacer_ng %}d-none{% endif %} d-none" id="scores_container_accuplacer_ng">
+                        <div class="col">
+                            Accuplacer NG English
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="accuplacer_ng[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.accuplacer_ng %}{{data.test_date.accuplacer_ng}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">Reading Comprehension</label>
+                            <input type="text" mask-format="000" data-min="0" data-max="300" name="accuplacer_ng[reading]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.accuplacer_ng_reading %}{{data.english_scores.accuplacer_ng_reading}}{% endif %}">
+                            <br>
+                            <label for="#">Writeplacer</label>
+                            <input type="text" mask-format="000" data-min="0" data-max="300" name="accuplacer_ng[writeplacer]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.accuplacer_ng_writeplacer %}{{data.english_scores.accuplacer_ng_writeplacer}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+
+                    <div class="row d-none form-group border-bottom mb-2 pb-2 {% if not data.test_date.accuplacer_ng_math %}d-none{% endif %}" id="scores_container_accuplacer_ng_math">
+                        <div class="col">
+                            Accuplacer NG Math
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="accuplacer_ng_math[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.accuplacer_ng_math %}{{data.test_date.accuplacer_ng_math}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>
+                        <div class="col">
+                            <label for="#">Advanced Algebra and Functions</label>
+                            <input type="text" mask-format="000" data-min="0" data-max="300" name="accuplacer_ng_math[algebra]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.accuplacer_ng_math_algebra %}{{data.math_scores.accuplacer_ng_math_algebra}}{% endif %}"><br>
+                                <label for="#">Quantitative Reasoning, Algebra and Statistics</label>
+                            <input type="text" name="accuplacer_ng_math[qras]" class="form-control masked validate" mask-format="000" data-min="0" data-max="300" placeholder=""
+                                value="{% if data.math_scores.accuplacer_ng_math_qras %}{{data.math_scores.accuplacer_ng_math_qras}}{% endif %}">
+                        </div>                        
+                    </div>
+
+                    <div class="row d-none form-group border-bottom mb-2 pb-2 {% if not data.test_date.sat %}d-none{% endif %}" id="scores_container_sat">
+                        <div class="col">
+                            SAT Evidence Based Reading and Writing
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="sat[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.sat %}{{data.test_date.sat}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">Evidence Based Reading and Writing</label>
+                            <input mask-format="000" data-min="200" data-max="800" type="text" name="sat[evidence_reading]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.sat_evidence_reading %}{{data.english_scores.sat_evidence_reading}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+
+                    <div class="row d-none form-group border-bottom mb-2 pb-2 {% if not data.test_date.sat_reading %}d-none{% endif %}" id="scores_container_sat_reading">
+                        <div class="col">
+                            SAT Reading
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="sat_reading[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.sat_reading %}{{data.test_date.sat_reading}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">Writing and Language</label>
+                            <input mask-format="00" data-min="10" data-max="40" type="text" name="sat_reading[evidence_writing]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.sat_reading_evidence_writing %}{{data.english_scores.sat_reading_evidence_writing}}{% endif %}"><br>
+                            <label for="#">Reading</label>
+                            <input mask-format="00" data-min="10" data-max="40" type="text" name="sat_reading[evidence_reading]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.sat_reading_evidence_reading %}{{data.english_scores.sat_reading_evidence_reading}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.sat_old %}d-none{% endif %}" id="scores_container_sat_old">
+                        <div class="col">
+                            SAT (Old)
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="sat_old[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.sat_old %}{{data.test_date.sat_old}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">Score</label>
+                            <input type="text" mask-format="000" data-min="200" data-max="800" name="sat_old[writing]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.sat_old_writing %}{{data.english_scores.sat_old_writing}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.ap %}d-none{% endif %}" id="scores_container_ap">
+                        <div class="col">
+                            AP English
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="ap[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.ap %}{{data.test_date.ap}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">English Language and Comprehension</label>
+                            <input mask-format="0" data-min="1" data-max="5" type="text" name="ap[reading]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.ap_reading %}{{data.english_scores.ap_reading}}{% endif %}">                            
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.ap_math %}d-none{% endif %}" id="scores_container_ap_math">
+                        <div class="col">
+                            AP Math
+                        </div>
+                        <div class="col">
+                            <input  type="text" placeholder="mm/dd/YYYY" name="ap_math[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.ap_math %}{{data.test_date.ap_math}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>
+                        <div class="col">
+                            <label for="#">Calculus AB</label>
+                            <input mask-format="0" data-min="1" data-max="5" type="text" name="ap_math[calculus_ab]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.ap_math_calculus_ab %}{{data.math_scores.ap_math_calculus_ab}}{% endif %}"><br>
+                                <label for="#">Calculus BC</label>
+                            <input mask-format="0" data-min="1" data-max="5" type="text" name="ap_math[calculus_bc]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.ap_math_calculus_bc %}{{data.math_scores.ap_math_calculus_bc}}{% endif %}">
+                        </div>                        
+                    </div>
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.smarter_balance %}d-none{% endif %}" id="scores_container_smarter_balance">
+                        <div class="col">
+                            Smarter Balance ELA
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="smarter_balance[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.smarter_balance %}{{data.test_date.smarter_balance}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">Score</label>
+                            <input mask-format="0" data-min="1" data-max="4" type="text" name="smarter_balance[english]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.smarter_balance_english %}{{data.english_scores.smarter_balance_english}}{% endif %}">                            
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+                    <div class="row form-group  border-bottom mb-2 pb-2 {% if not data.test_date.act_english %}d-none{% endif %} d-none" id="scores_container_act_english">
+                        <div class="col">
+                            ACT English
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="act_english[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.act_english %}{{data.test_date.act_english}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">Score</label>
+                            <input mask-format="00" data-min="1" data-max="36" type="text" name="act_english[english]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.act_english_english %}{{data.english_scores.act_english_english}}{% endif %}">                            
+                        </div>
+                        <div class="col">
+                            
+                        </div>                        
+                    </div>
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.hlib %}d-none{% endif %}" id="scores_container_hl_ib">
+                        <div class="col">
+                            IB English Exam
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="hlib[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.hlib %}{{data.test_date.hlib}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <label for="#">English Score</label>
+                            <input mask-format="0" data-min="1" data-max="7" type="text" name="hlib[english]" class="form-control masked validate" placeholder=""
+                                value="{% if data.english_scores.hlib_english %}{{data.english_scores.hlib_english}}{% endif %}">                            
+                        </div>
+                        <div class="col">
+                            
+                        </div>
+                    </div>
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.hlib_math %}d-none{% endif %}" id="scores_container_hl_ib_math">
+                        <div class="col">
+                            IB Mathematics Exam
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="hlib_math[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.hlib_math %}{{data.test_date.hlib_math}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            
+                        </div>
+                        <div class="col">
+                            <label for="#">Mathematics Score</label>
+                            <input mask-format="0" data-min="1" data-max="7" type="text" name="hlib_math[score]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.hlib_math %}{{data.math_scores.hlib_math}}{% endif %}">                            
+                        </div>
+                    </div>
+
+                    <div class="row form-group border-bottom mb-2 pb-2 {% if not data.test_date.mpt %}d-none{% endif %}" id="scores_container_mpt">
+                        <div class="col">
+                            MPT 
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="mpt[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.mpt %}{{data.test_date.mpt}}{% endif %}">
+                        </div>
+                        <div class="col"></div>
+                        <div class="col">
+                            <label for="#">Advanced Math</label>
+                            <input mask-format="000" data-min="0" data-max="999" type="text" name="mpt[advanced_math]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.mpt_advanced_math %}{{data.math_scores.mpt_advanced_math}}{% endif %}">      <br>
+                            
+                            <label for="#">General Math</label>
+                                <input mask-format="000" data-min="0" data-max="999" type="text" name="mpt[general_math]" class="form-control masked validate" placeholder=""
+                                    value="{% if data.math_scores.mpt_general_math %}{{data.math_scores.mpt_general_math}}{% endif %}">      <br>
+                                                              
+                        </div>
+                    </div>
+
+                    <div class="row form-group border-bottom mb-2 {% if not data.test_date.aleks %}d-none{% endif %}" id="scores_container_aleks">
+                        <div class="col">
+                            ALEKS
+                        </div>
+                        <div class="col">
+                            <input type="text" placeholder="mm/dd/YYYY" name="aleks[test_date]" class="form-control datepicker dateinput" placeholder=""
+                                value="{% if data.test_date.aleks %}{{data.test_date.aleks}}{% endif %}">
+                        </div>
+                        <div class="col"></div>
+                        <div class="col">
+                            <label for="#">Score</label>
+                            <input mask-format="000" data-min="0" data-max="100" type="text" name="aleks[math]" class="form-control masked validate" placeholder=""
+                                value="{% if data.math_scores.aleks_math %}{{data.math_scores.aleks_math}}{% endif %}">                            
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-group mt-4 d-none">
+                    <label for="" class=" requiredField">
+                        If applicable to the course and the course pre-req, please provide student course and grades for English and Mathematics HS courses. Some pre-reqs may also require you to attach a high school transcript.
+                    </label>
+
+                    <div class="col">
+                    <div class="row form-group bg-gradient-primary text-white">    
+                        <div class="col">HS English/Mathematics Course</div>
+                        <div class="col">Grade</div>
+                    </div>
+                    {% for i in 3|times %}
+                    <div class="row form-group">
+                        
+                        <div class="col">
+                            <input type="text" name="hs_course[name]" class="form-control" placeholder=""
+                                value="{% if data.hs_courses %}{{data.hs_courses|list_index:forloop.counter0}}{% endif %}">
+                        </div>
+                        <div class="col">
+                            <input type="text" name="hs_course[grade]" class="form-control" placeholder=""
+                                value="{% if data.hs_course_grades %}{{data.hs_course_grades|list_index:forloop.counter0}}{% endif %}">
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                </div>
+                
+                {{data.recommendation_form | crispy}}
+
+
+                                <input type="submit" id="btn_submit_recommendation" class="btn btn-primary"
+                                    value="Submit Recommendation" name="submit_recommendation">
+                            </form>
+                        </div>
+                    </div>
+                </div> <!-- end tab #term_rec{{data.term.id}} -->
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="modal-add_new" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div id="modal_content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

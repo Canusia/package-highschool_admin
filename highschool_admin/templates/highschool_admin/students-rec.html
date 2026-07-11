@@ -1,0 +1,334 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}Students{% endblock %}
+
+{% block page_header %}
+{{intro|safe}}
+{% include "highschool_admin/partials/_breadcrumb.html" with page_name="Students" %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .myGlower {
+        background-color: #ccc;
+        border: 1px solid transparent;
+        -webkit-transition: border 0.1s linear, box-shadow 0.1s linear;
+        -moz-transition: border 0.1s linear, box-shadow 0.1s linear;
+        transition: border 0.1s linear, box-shadow 0.1s linear;
+    }
+
+    .myGlower_active {
+        border-color: blue;
+        -webkit-box-shadow: 0 0 5px blue;
+        -moz-box-shadow: 0 0 5px blue;
+        box-shadow: 0 0 5px blue;
+    }
+
+    .modal-dialog,
+    .modal-content {
+        height: 90%;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 143px);
+        overflow-y: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Configuration data for JavaScript -->
+<div id="students-rec-config"
+     data-update-registration-url="{% url 'highschool_admin:update_registration_status' %}"
+     data-pending-pay-type-url="{% url 'highschool_admin:get_pending_pay_type' %}"
+     style="display: none;"></div>
+
+<ul class="nav nav-tabs">
+    {% if tab_setting.show_recommendation %}
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#pending_recommendation">Pending Recommendation</a>
+    </li>
+    {% endif %}
+    {% if tab_setting.show_review %}
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#pending_review">Review</a>
+    </li>
+    {% endif %}
+    {% if tab_setting.show_pay_type %}
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#pending_pay_type">Pending Pay Type</a>
+    </li>
+    {% endif %}
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#student_registrations">Registrations by Term</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#students">Students by Term</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    {% if tab_setting.show_recommendation %}
+    <!-- Pending Recommendation Tab -->
+    <div class="tab-pane" id="pending_recommendation">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of students who need their applications reviewed.
+                        </p>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table dataTable table-striped" id="tbl_pending_rec">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40%;">Name</th>
+                                        <th>Student ID</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tab_setting.show_review %}
+    <!-- Pending Review Tab -->
+    <div class="tab-pane" id="pending_review">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of students who need their applications reviewed.
+                        </p>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table dataTable table-striped" id="tbl_pending_review">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40%;">Name</th>
+                                        <th>Student ID</th>
+                                        <th>Class Section</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tab_setting.show_pay_type %}
+    <!-- Pending Pay Type Tab -->
+    <div class="tab-pane" id="pending_pay_type">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of students who need their pay type reviewed.
+                        </p>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table dataTable table-striped" id="tbl_pending_pay_type_rec">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40%;">Name</th>
+                                        <th>Student ID</th>
+                                        <th>Pay Type</th>
+                                        <th>Class Section</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Registrations by Term Tab -->
+    <div class="tab-pane" id="student_registrations">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of registrations for the selected term in your high school(s)
+                        </p>
+                        <div class="mb-3">
+                            <div class="card">
+                                <div class="card-body bg-gray-200">
+                                    <form id="frm_registration_term_filter" class="form-inline float-right filter">
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <div class="float-right">
+                                                    <select class="form-control mt-2" name="term">
+                                                        <option value="-2">By Term</option>
+                                                        {% for c in terms %}
+                                                        <option {% if c.id == active_term.id %} selected {% endif %} value="{{c.id}}">{{c.label}} {{c.year}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="float-right text-dark border-0 form-control mt-2 bg-transparent">Filter By Term:&nbsp;</div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table dataTable table-striped" id="tbl_registrations_in_highschool">
+                                <thead>
+                                    <tr>
+                                        <th data-data="created_on" data-name="created_on">Applied On</th>
+                                        <th data-data="pay_type" data-name="pay_type">Pay Type</th>
+                                        <th searchable="1" data-data="student.user.last_name" data-name="student.user.last_name">Last Name</th>
+                                        <th searchable="1" data-data="student.user.first_name" data-name="student.user.first_name">First Name</th>
+                                        <th searchable="1" data-data="class_section.course.name" data-name="class_section.course.name">Course</th>
+                                        <th data-data="status" data-name="status">Status</th>
+                                        <th data-data="highschool.name" data-name="highschool.name">Reviewer</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students by Term Tab -->
+    <div class="tab-pane" id="students">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of students in your high school(s) for have applied for classes in the selected term.
+                        </p>
+                        <div class="mb-3">
+                            <div class="card">
+                                <div class="card-body bg-gray-200">
+                                    <form id="frm_students_term_filter" class="form-inline float-right filter">
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <div class="float-right">
+                                                    <select class="form-control mt-2" name="term">
+                                                        <option value="-1">By Term</option>
+                                                        {% for c in terms %}
+                                                        <option {% if c.id == active_term.id %} selected {% endif %} value="{{c.id}}">{{c.label}} {{c.year}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="float-right text-dark border-0 form-control mt-2 bg-transparent">Filter By Term:&nbsp;</div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table table-striped dataTable" id="tbl_in_highschool">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>High School</th>
+                                        <th>Username</th>
+                                        <th>Graduation Year</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div id='details' class='modal fade' role='dialog' tabindex="-1">
+    <div class='modal-dialog' style="max-width: 90%;">
+        <div class='modal-content'>
+            <div class='modal-body' style="position: relative;">
+                <iframe id='details_src' width='100%' height='100%'
+                    style="position: absolute; height: 98%; width: 97%;" frameborder='0' allowfullscreen></iframe>
+            </div>
+            <div class='modal-footer'>
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'highschool_admin/js/students-rec.js' %}"></script>
+
+<script>
+    jQuery(document).ready(function ($) {
+        {% if tab_setting.show_review %}
+        $('#tbl_pending_review').DataTable({
+            language: {
+                'emptyTable': 'No pending applications found.'
+            },
+            dom: 'B<"float-left mt-3 mb-3"l><"float-right mt-3"f><"row clear">rt<"row"<"col-6"i><"col-6 float-right"p>>',
+            buttons: [
+                {
+                    extend: 'csv', className: 'btn btn-sm btn-primary text-white text-light',
+                    text: '<i class="fas fa-file-csv text-white"></i>&nbsp;CSV',
+                    titleAttr: 'Export Records in current View to CSV'
+                },
+                {
+                    extend: 'print', className: 'btn btn-sm btn-primary text-white text-light',
+                    text: '<i class="fas fa-print text-white"></i>&nbsp;Print',
+                    titleAttr: 'Print Records in Current View'
+                }],
+            ajax: '/highschool_admin/api/pending-reviews/?format=datatables',
+            columns: [
+                {
+                    'render': function (data, type, row, meta) {
+                        var col = row.name + " <br>"
+                        col += row.action
+                        return col;
+                    }
+                },
+                {
+                    'render': function (data, type, row, meta) {
+                        return row.psid
+                    }
+                },
+                {
+                    'render': function (data, type, row, meta) {
+                        return row.class_section
+                    }
+                },
+                {
+                    'render': function (data, type, row, meta) {
+                        var col = row.status
+                        if (row.next_step != '') {
+                            col += "<br><small>Next Step - " + row.next_step + "</span>"
+                        }
+                        return col;
+                    }
+                }
+            ]
+        });
+        {% endif %}
+
+        if (!$('.nav-tabs .nav-link.active').length) {
+            $('.nav-tabs .nav-link[data-toggle="tab"]').first().tab('show');
+        }
+    });
+</script>
+{% endblock %}

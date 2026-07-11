@@ -1,0 +1,65 @@
+{% extends "cis/logged-base.html" %}
+{%block title %}Instructor Classes{% endblock %}
+
+{% load templatehelpers %}
+
+{% block body %}
+<main>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'instructor:dashboard' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Course Applications</li>
+        </ol>
+    </nav>
+    <div class="row">
+        <div class="col-12">
+            {% if messages %}
+            <ul class="messages list-group mb-4">
+                {% for message in messages %}
+                <li{% if message.tags %} class="list-group-item {{ message.tags }}" {% endif %}>
+                    {{ message }}</li>
+                    {% endfor %}
+            </ul>
+            {% endif %}
+            <!-- Tab panes -->
+            <div class="tab-content">
+                {% if is_accepting_new == 'Yes' %}
+                <h5 class="card-title">CIHS Adjunct Application<small>
+                    <form action="" method="post" id="" class="float-right">
+                        {% csrf_token %}
+                        <input type="submit" class="btn btn-primary btn-sm" value="Start a New Application">
+                    </form>
+                </small></h5>
+                {% endif %}
+                {{intro|safe}}
+            <div class="clearfix"></div>
+                {% if applications %}
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Started On</th>
+                            <th>High School</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>{{app.createdon|date:'m/d/Y'}}</td>
+                            <td>{{app.highschool}}</td>
+                            <td>{{app.status}}</td>
+                            <td>
+                                <a href="{% url 'instructor_app:review_application' app.id %}">Continue</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="alert alert-info mt-3">No applications found</p>
+                {% endif %}
+            </div>
+        </div>
+</main>
+{% endblock %}

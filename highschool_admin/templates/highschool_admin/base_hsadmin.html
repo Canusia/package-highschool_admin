@@ -1,0 +1,26 @@
+{% extends "cis/logged-base.html" %}
+
+{% load static %}
+{% load templatehelpers %}
+
+{% block body %}
+{% block extra_css %}{% endblock %}
+
+<main>
+    {% block page_header %}
+    {{intro|safe}}
+    {% include "highschool_admin/partials/_breadcrumb.html" with page_name=page_name %}
+    {% endblock %}
+
+    <div class="row">
+        <div class="col-12">
+            {% block messages %}
+            {% include "cis/messages.html" %}
+            {% endblock %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block messages %}{% endblock %}
+
+{% block page_header %}
+<main>
+    {{intro|safe}}
+</main>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% include 'cis/page_messages.html' %}
+
+    <div class="col-md-8">
+        <div class="row">
+            {% include 'cis/portal_dashboard_tiles.html' with nav_items=nav_items %}
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        {{side_bar|safe}}
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Announcement(s)</h5>
+                {% if announcements %}
+                {% for anc in announcements %}
+                <div class="card-text alert alert-success">
+                    {{anc.description|safe}}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="alert alert-danger">No announcements found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
