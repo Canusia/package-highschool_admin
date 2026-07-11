@@ -82,69 +82,12 @@
             <!-- Tab panes -->
             <div class="tab-content">
                 <div class="tab-pane" id="classes">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="card border-top-0">
-                                <div class="card-body">
-                                    <p class="alert alert-info">
-                                        Below is the list of student's class(es)
-                                    </p>
-                                    <div class="table-responsive">
-                                        <script>
-                                            jQuery(document).ready(function ($) {
-                                                $('#student_classes').DataTable(
-                                                    {
-                                                        'lengthMenu': [30, 50, 100],
-                                                        'order': [[0, 'desc']],
-                                                        dom: 'B<"float-left mt-3 mb-3"l><"float-right mt-3"f><"row clear">rt<"row"<"col-6"i><"col-6 float-right"p>>',
-                                                        buttons: [
-                                                            {
-                                                                extend: 'csv', className: 'btn btn-sm btn-primary text-white text-light',
-                                                                text: '<i class="fas fa-file-csv text-white"></i>&nbsp;CSV',
-                                                                titleAttr: 'Export Records in current View to CSV' 
-                                    },
-                                    { 
-                                        extend: 'print', className: 'btn btn-sm btn-primary text-white text-light',
-                                        text: '<i class="fas fa-print text-white"></i>&nbsp;Print',
-                                        titleAttr: 'Print Records in Current View' 
-                                    }],
-                                                        }
-                                                );
-                                            });
-                                        </script>
-                                        <table class="table table-striped" id="student_classes">
-                                            <thead>
-                                                <tr>
-                                                    <th>Term</th>
-                                                    <th>Course</th>
-                                            <th width='30%'>Course Info.</th>
-                                            <th>Instructor</th>
-                                            <th>Status</th>
-                                            <th>Pay Type</th>
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                {% for registration in classes %}
-                                                <tr>
-                                                    <td>{{registration.class_section.term}}</td>
-                                                    <td>
-                                                        {{registration.class_section.course.name}}&nbsp;{{registration.class_section.section_number}}&nbsp; ({{registration.class_section.course.credit_hours}}&nbsp;credits)<br>
-                                                        <span class='text-muted'>{{registration.class_section.course.title}}</span><br><span class=''>CRN&nbsp;{{registration.class_section.class_number}}</span>
-                                                    </td>
-                                                    <td>{{registration.class_section.schedule|safe}}<br><small>{{registration.class_section.course.sexy_description|safe}}</small></td>
-                                                    <td>{{registration.class_section.teacher}}</td>
-                                                    
-                                                    <td>{{registration.sexy_status}}</td>
-                                                    <td>{{registration.pay_type_pretty}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                </div>
-                            </div>
+                    <div class="card border-top-0">
+                        <div class="card-body">
+                            <p class="alert alert-info">
+                                Below is the list of student's class(es)
+                            </p>
+                            {% include registrations_table.partial_template with config=registrations_table %}
                         </div>
                     </div>
                 </div> <!-- end tab #classes -->

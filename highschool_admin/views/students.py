@@ -12,6 +12,7 @@ from cis.menu import draw_menu
 from cis.forms.student import (
     StudentRecommendationForm, StudentSupportingDocumentForm,
 )
+from cis.services.table_configs import get_table_config
 from cis.settings.highschool_admin_portal import highschool_admin_portal as portal_lang
 from cis.utils import registration_terms, active_term
 
@@ -209,6 +210,11 @@ def student(request, record_id):
             'menu': menu,
             'record': record,
             'classes': registered_classes,
+            'registrations_table': get_table_config('registrations_table').build_config(
+                variant='hs_student_detail',
+                api_url=(f'/highschool_admin/api/student-registrations/'
+                         f'?format=datatables&student={record.id}'),
+            ),
             'term_data': term_data,
             'intro': portal_lang(request).from_db().get('student_blurb', 'Change me'),
             'notes_api_url': f'/highschool_admin/api/student_notes/?format=datatables&student_id={record.id}',
