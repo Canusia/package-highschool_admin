@@ -81,127 +81,60 @@ def student(request, record_id):
 
     if request.method == 'POST' and request.POST.get('action') not in (
             'upload_support_doc', 'delete_support_doc'):
-        current_registrations = registered_classes.filter(
-            class_section__term__id=request.POST.get('term')
+        rec_registrations = registered_classes.filter(
+            class_section__term__in=current_registration_terms
         )
-
         recommendation_form = StudentRecommendationForm(
-            record,
-            current_registrations,
-            request.POST,
-            request.FILES
-        )
+            record, rec_registrations, request.POST, request.FILES)
 
         if recommendation_form.is_valid():
-
-            for registration in current_registrations:
-                if registration.status == 'applied':
-                    if request.POST.get(f'registration_{registration.id}'):
-                        registration.status = request.POST.get(f'registration_{registration.id}')
-                        registration.reviewer = user
-
-                        if registration.status == 'approved':
-                            ...
-                        elif registration.status == 'not_approved':
-                            registration.non_student_pay_amount = 0.00
-                            registration.pay_type = 'none'
-
-                        registration.save()
-
-            recommendation = None
-            if record.has_recommendation(recommendation_form.cleaned_data['term']):
-                recommendation = record.get_recommendation(
-                    recommendation_form.cleaned_data['term'])
-
-            if not recommendation:
-                recommendation = StudentRecommendation(
-                    student=record,
-                    term=Term.objects.get(pk=recommendation_form.cleaned_data['term'])
-                )
-            recommendation.recommendation = {
-                'student_gpa': recommendation_form.cleaned_data['student_gpa'],
-                'student_grade_level': recommendation_form.cleaned_data['student_grade_level'],
-                'student_prereq': recommendation_form.cleaned_data['student_prereq'],
-                'grade_earned': recommendation_form.cleaned_data['grade_earned'],
-                'school_assessment': recommendation_form.cleaned_data['school_assessment'],
-                'keystone_exam': recommendation_form.cleaned_data['keystone_exam'],
-                'geip': recommendation_form.cleaned_data['geip'],
-                'enrolled_in_honors': recommendation_form.cleaned_data['enrolled_in_honors'],
-            }
-
-            if request.FILES:
-                recommendation.upload = request.FILES['file']
-
-            recommendation.submitted_by = request.user
-            recommendation.save()
-
+            recommendation_form.save(request, record, rec_registrations, set_reviewer=True)
             messages.add_message(
-                request,
-                messages.SUCCESS,
-                'Successfully submitted recommendation.',
-                'list-group-item-success')
+                request, messages.SUCCESS,
+                'Successfully submitted recommendation.', 'list-group-item-success')
             return redirect('highschool_admin:student', record_id=record.id)
         else:
             messages.add_message(
-                request,
-                messages.SUCCESS,
+                request, messages.SUCCESS,
                 'Unable to complete your request. Please review the form and try again.',
                 'list-group-item-danger')
+            submitted_rec_form['unified'] = recommendation_form
 
-        submitted_rec_form[
-            recommendation_form.cleaned_data['term']
-        ] = recommendation_form
+    rec_registrations = registered_classes.filter(
+        class_section__term__in=current_registration_terms
+    ).order_by('class_section__term__label')
 
-    term_data = []
+    initial = {
+        'student': record.id,
+        'student_state_id': record.state_id,
+        'student_bridge': '2',
+    }
+    existing = None
     for term in current_registration_terms:
-        # print(123)
-        c_term_data = {}
-        current_registrations = registered_classes.filter(
-            class_section__term=term
-        )
-
-        if not current_registrations:
-            continue
-        c_term_data['registrations'] = current_registrations
-
-        initial = {
-            'student': record.id,
-            'term': term.id,
-            'student_state_id': record.state_id,
-            'student_bridge': '2'
-        }
-
-        recommendation = None
         if record.has_recommendation(term.id):
-            recommendation = record.get_recommendation(term.id)
+            existing = record.get_recommendation(term.id)
+            break
+    if existing:
+        r = existing.recommendation
+        initial.update({
+            'student_gpa': r.get('student_gpa'),
+            'student_prereq': r.get('student_prereq'),
+            'student_grade_level': r.get('student_grade_level'),
+            'student_bridge': r.get('student_bridge', '2'),
+            'grade_earned': r.get('grade_earned'),
+            'school_assessment': r.get('school_assessment'),
+            'keystone_exam': r.get('keystone_exam'),
+            'geip': r.get('geip'),
+            'enrolled_in_honors': r.get('enrolled_in_honors'),
+        })
+        initial['upload_label'] = StudentRecommendation.get_form_message()
 
-            initial['student_gpa'] = recommendation.recommendation['student_gpa']
-            initial['student_prereq'] = recommendation.recommendation['student_prereq']
-            initial['student_grade_level'] = recommendation.recommendation['student_grade_level']
-            initial['student_bridge'] = recommendation.recommendation.get('student_bridge', '2')
-
-            initial['grade_earned'] = recommendation.recommendation.get('grade_earned')
-            initial['school_assessment'] = recommendation.recommendation.get('school_assessment')
-            initial['keystone_exam'] = recommendation.recommendation.get('keystone_exam')
-            initial['geip'] = recommendation.recommendation.get('geip')
-            initial['enrolled_in_honors'] = recommendation.recommendation.get('enrolled_in_honors')
-
-            initial['upload_label'] = StudentRecommendation.get_form_message()
-
-        if submitted_rec_form.get(str(term.id)):
-            recommendation_form = submitted_rec_form[str(term.id)]
-            recommendation_form.fields['upload_label'].label = StudentRecommendation.get_form_message()
-        else:
-            recommendation_form = StudentRecommendationForm(
-                student=record,
-                current_registrations=current_registrations,
-                initial=initial
-            )
-
-        c_term_data['recommendation_form'] = recommendation_form
-        c_term_data['term'] = term
-
-        term_data.append(c_term_data)
+    if submitted_rec_form.get('unified'):
+        recommendation_form = submitted_rec_form['unified']
+        recommendation_form.fields['upload_label'].label = StudentRecommendation.get_form_message()
+    else:
+        recommendation_form = StudentRecommendationForm(
+            student=record, current_registrations=rec_registrations, initial=initial)
 
     return render(
         request,
@@ -215,7 +148,8 @@ def student(request, record_id):
                 api_url=(f'/highschool_admin/api/student-registrations/'
                          f'?format=datatables&student={record.id}'),
             ),
-            'term_data': term_data,
+            'recommendation_form': recommendation_form,
+            'recommendation_registrations': rec_registrations,
             'intro': portal_lang(request).from_db().get('student_blurb', 'Change me'),
             'notes_api_url': f'/highschool_admin/api/student_notes/?format=datatables&student_id={record.id}',
             'support_doc_form': support_doc_form,
