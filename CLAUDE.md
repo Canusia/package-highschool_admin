@@ -18,3 +18,7 @@ MyCE **High School Admin** portal, extracted as a pip-installable submodule.
   the registry lives in `cis.page_messages`. See README → "Porting page_messages".
 - Run tests from a host that checks this out as an in-tree submodule (dev/nested layout):
   `docker exec -w /app/webapp django_web_ewu python manage.py test highschool_admin`.
+- The student-detail **Class(es)** tab uses the host `myce_tenant_configs` table-config pattern
+  (`get_table_config('registrations_table')` + the shared `_table.html` partial + `registrations_table.js`),
+  fed by this package's `/highschool_admin/api/student-registrations/` endpoint. **Host requirement:** the
+  `hs_student_detail` variant must exist in `myce_tenant_configs.services.registrations_table`.

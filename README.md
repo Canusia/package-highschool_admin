@@ -36,6 +36,17 @@ install it outside a MyCE tenant.
   two-step session).
 - `django_login_history` — login-history model (used in test fixtures).
 - The `setting` framework — surfaces the `student_tabs` configurator under CE Settings.
+- `myce_tenant_configs` — the host **table-config pattern** that renders the student-detail
+  **Class(es)** tab. The portal calls
+  `cis.services.table_configs.get_table_config('registrations_table')` and includes the shared
+  partial `myce_tenant_configs/registrations/_table.html` (rows AJAX-loaded by that app's
+  `registrations_table.js`). **The host's `myce_tenant_configs.services.registrations_table` MUST
+  define an `hs_student_detail` profile variant** (columns: Term, Applied On, Status, Course,
+  Grade), and the DRF `rest_framework_datatables` defaults (filter backend + `DatatablesPageNumberPagination`)
+  must be active. The row data comes from this package's own
+  `/highschool_admin/api/student-registrations/` endpoint (reusing `cis`'s
+  `StudentRegistrationSerializer`), so the tenant only needs to supply the `myce_tenant_configs` app
+  and the `hs_student_detail` variant. Without both, the Class(es) tab fails to render.
 
 **Optional integrations** (guarded by `importlib.util.find_spec`, safe if absent):
 
