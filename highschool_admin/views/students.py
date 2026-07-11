@@ -88,7 +88,9 @@ def student(request, record_id):
             record, rec_registrations, request.POST, request.FILES)
 
         if recommendation_form.is_valid():
-            recommendation_form.save(request, record, rec_registrations, set_reviewer=True)
+            recommendation_form.save(
+                request, record, rec_registrations, set_reviewer=True,
+                reviewer=get_current_hsadmin(request))
             messages.add_message(
                 request, messages.SUCCESS,
                 'Successfully submitted recommendation.', 'list-group-item-success')

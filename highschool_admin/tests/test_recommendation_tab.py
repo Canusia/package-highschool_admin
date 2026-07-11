@@ -145,14 +145,39 @@ class RecommendationTabRecEligibleTests(TestCase):
         self.assertContains(
             resp, f'name="registration_{self.registration.id}"')
 
-    # NOTE: a POST-integration test (submit the recommendation form and
-    # assert a StudentRecommendation row is created) was attempted here and
-    # deliberately dropped. With set_reviewer=True,
-    # myce_tenant_configs/services/recommendation_form.py:314 does
-    # `reg.reviewer = request.user`, but StudentRegistration.reviewer is a
-    # FK to HSAdministrator, not to the CustomUser the HS-admin logs in as.
-    # A logged-in HS admin posting this form therefore raises
-    # `ValueError: Cannot assign "<CustomUser>": "StudentRegistration.reviewer"
-    # must be a "HSAdministrator" instance.` This is a pre-existing bug in
-    # the tenant-config recommendation-form save path, not in this
-    # (highschool_admin) view/template, and is out of scope for this fix.
+    def test_post_recommendation_sets_hsadmin_reviewer(self):
+        """Submitting the recommendation form must set
+        StudentRegistration.reviewer to the logged-in HS admin's
+        HSAdministrator record (StudentRegistration.reviewer is a FK to
+        cis.HSAdministrator, NOT to CustomUser). Prior to the fix in
+        myce_tenant_configs/services/recommendation_form.py, save() did
+        `reg.reviewer = request.user` (a CustomUser), which raises
+        `ValueError: Cannot assign "<CustomUser>": "StudentRegistration.reviewer"
+        must be a "HSAdministrator" instance.` on POST.
+        """
+        from cis.models.student import StudentRecommendation
+
+        c = _login(self.user)
+        data = {
+            'student': str(self.student.id),
+            'student_grade_level': self.student.grade_level,
+            'student_gpa': '3.5',
+            'student_prereq': 'Yes',
+            'school_assessment': 'Proficient',
+            'keystone_exam': 'Proficient',
+            'geip': 'No',
+            'enrolled_in_honors': 'No',
+            f'registration_{self.registration.id}': 'approved',
+            'submit_recommendation': 'Submit Recommendation',
+        }
+        resp = c.post(self._url(), data)
+        self.assertEqual(resp.status_code, 302)
+
+        self.assertTrue(
+            StudentRecommendation.objects.filter(
+                student=self.student, term=self.term).exists())
+
+        self.registration.refresh_from_db()
+        self.assertEqual(self.registration.status, 'approved')
+        self.assertIsNotNone(self.registration.reviewer_id)
+        self.assertEqual(self.registration.reviewer_id, self.admin.id)
