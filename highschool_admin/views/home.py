@@ -550,7 +550,26 @@ def student(request, record_id):
     # rec form instance further down in the method
     submitted_rec_form = {}
 
+    # The manage_student_recommendation permission is keyed to the STUDENT's
+    # high school, not the section's host high school -- those differ when a
+    # student takes a section hosted elsewhere, and the recommendation belongs
+    # to the school the student attends.
+    can_recommend = user.can_manage_student_recommendation(
+        record.highschool.id if record.highschool else None
+    )
+
     if request.method == 'POST':
+        # Refuse the whole POST before any write. The previous per-registration
+        # check only skipped the approve/deny status change -- the
+        # StudentRecommendation record itself saved regardless.
+        if not can_recommend:
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                'You do not have permission to submit recommendations for this student.',
+                'list-group-item-danger')
+            return redirect('highschool_admin:student', record_id=record.id)
+
         current_registrations = registered_classes.filter(
             class_section__term__id=request.POST.get('term')
         )
@@ -566,10 +585,9 @@ def student(request, record_id):
             
             for registration in current_registrations:
                 if registration.status == 'applied':
-                    # if registration.class_section.highschool and not user.can_manage_student_recommendation(
-                    #     registration.class_section.highschool.id
-                    # ):
-                    #     continue
+                    # No per-registration permission check here: the whole POST
+                    # is already gated on can_recommend above, computed from the
+                    # student's high school.
                     if(request.POST.get(f'registration_{registration.id}')):
                         registration.status = request.POST.get(f'registration_{registration.id}')
                         registration.reviewer = user
@@ -693,6 +711,7 @@ def student(request, record_id):
             'record': record,
             'classes': registered_classes,
             'term_data': term_data,
+            'can_recommend': can_recommend,
             'intro': portal_lang(request).from_db().get('student_blurb', 'Change me'),
             'notes_api_url': f'/highschool_admin/api/student_notes/?format=datatables&student_id={record.id}'
         })
@@ -932,7 +951,9 @@ def get_pending_pay_type(request):
 
 def get_pending_recommendations(request):
     user = HSAdministrator.objects.get(user__id=request.user.id)
-    highschools = user.get_highschools()
+    # Only schools where this admin actually holds the recommendation
+    # permission, not every school they hold a position at.
+    highschools = user.get_recommendation_highschools()
 
     pending_recommendations = StudentRegistration.get_pending_recommendations(
         highschool_ids=[hs.id for hs in highschools]

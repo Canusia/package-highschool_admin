@@ -43,6 +43,15 @@ def student(request, record_id):
     # rec form instance further down in the method
     submitted_rec_form = {}
 
+    # The manage_student_recommendation permission is keyed to the STUDENT's
+    # high school, not the section's host high school -- those differ when a
+    # student takes a section hosted elsewhere, and the recommendation belongs
+    # to the school the student attends. `record` is already scoped to the
+    # admin's schools by the lookup above; this is the second, finer gate.
+    can_recommend = bool(user) and user.can_manage_student_recommendation(
+        record.highschool.id if record.highschool else None
+    )
+
     support_docs_url = reverse(
         'highschool_admin:student', args=[record.id]) + '#support_docs'
 
@@ -81,6 +90,17 @@ def student(request, record_id):
 
     if request.method == 'POST' and request.POST.get('action') not in (
             'upload_support_doc', 'delete_support_doc'):
+        # Refuse the whole POST before any write. recommendation_form.save()
+        # writes the StudentRecommendation *and* flips each registration's
+        # status, so a gate applied per-registration would still let the
+        # recommendation record itself through.
+        if not can_recommend:
+            messages.add_message(
+                request, messages.SUCCESS,
+                'You do not have permission to submit recommendations for this student.',
+                'list-group-item-danger')
+            return redirect('highschool_admin:student', record_id=record.id)
+
         rec_registrations = registered_classes.filter(
             class_section__term__in=current_registration_terms
         )
@@ -152,6 +172,7 @@ def student(request, record_id):
             ),
             'recommendation_form': recommendation_form,
             'recommendation_registrations': rec_registrations,
+            'can_recommend': can_recommend,
             'intro': portal_lang(request).from_db().get('student_blurb', 'Change me'),
             'notes_api_url': f'/highschool_admin/api/student_notes/?format=datatables&student_id={record.id}',
             'support_doc_form': support_doc_form,

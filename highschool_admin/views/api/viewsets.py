@@ -38,7 +38,7 @@ from cis.forms.future_sections import (
     HSAdministratorPositionForm,
 )
 
-from ..utils import get_user_highschools
+from ..utils import get_user_highschools, get_user_recommendation_highschools
 from .serializers import (
     HSAdminCertificateSerializer,
     HSAdminStudentSerializer,
@@ -223,7 +223,8 @@ class PendingRecommendationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [HSADMIN_user_only]
 
     def get_queryset(self):
-        highschools = get_user_highschools(self.request)
+        # Recommendation-scoped, not every school the admin holds a position at.
+        highschools = get_user_recommendation_highschools(self.request)
 
         return StudentRegistration.get_pending_recommendations(
             highschool_ids=[hs.id for hs in highschools]

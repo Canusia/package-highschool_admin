@@ -78,9 +78,13 @@ class RecommendationTabRecEligibleTests(TestCase):
         self.user.groups.add(Group.objects.get_or_create(name='highschool_admin')[0])
         self.admin = HSAdministrator.objects.create(user=self.user)
         position = HSPosition.objects.create(name=_u('Pos'))
+        # The recommendation UI and the POST handler are both gated on
+        # HSAdministrator.can_manage_student_recommendation(), so this fixture
+        # has to grant the permission explicitly to exercise the permitted path.
         HSAdministratorPosition.objects.create(
             hsadmin=self.admin, highschool=self.hs,
             position=position, status='Active',
+            meta={'manage_student_recommendation': 'Yes'},
         )
 
         ay = AcademicYear.objects.create(name=_u('AY'))

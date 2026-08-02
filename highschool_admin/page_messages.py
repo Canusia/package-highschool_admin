@@ -2,13 +2,13 @@
 import importlib.util
 
 from cis.page_messages import page_message, PageMessage
-from .views.utils import get_user_highschools
+from .views.utils import get_user_highschools, get_user_recommendation_highschools
 from .settings.student_tabs import student_tabs
 
 
 def _pending_recommendation_count(request):
     from cis.models.section import StudentRegistration
-    highschools = get_user_highschools(request)
+    highschools = get_user_recommendation_highschools(request)
     return StudentRegistration.get_pending_recommendations(
         highschool_ids=[hs.id for hs in highschools]
     ).count()

@@ -24,6 +24,19 @@ def get_user_highschools(request):
     return hsadmin.get_highschools()
 
 
+def get_user_recommendation_highschools(request):
+    """Highschools where the current user may manage student recommendations.
+
+    Narrower than :func:`get_user_highschools` — use it anywhere pending
+    recommendation work is listed or counted, so an admin is not shown work
+    they hold no permission to act on.
+    """
+    hsadmin = get_current_hsadmin(request)
+    if hsadmin is None:
+        return HighSchool.objects.none()
+    return hsadmin.get_recommendation_highschools()
+
+
 def get_hsadmin_menu():
     """Resolve the highschool_admin portal menu from the ``cis.settings.menu``
     Setting, falling back to the legacy :data:`cis.menu.HS_ADMIN_MENU` list when
