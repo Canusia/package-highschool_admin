@@ -93,6 +93,16 @@
 
         </div>
         <div class="col-md-8">
+            {% comment %}
+            Grade entry lives in the optional `grades` package. The "as" form
+            of the url tag sets the variable to '' instead of raising when the
+            route is absent, so this degrades to nothing when grades is not
+            installed.
+            {% endcomment %}
+            {% url 'grades_highschool_admin:class_section_grade' record.id as grades_url %}
+            {% if grades_url %}
+            <a class="btn btn-sm btn-primary float-right mb-2" href="{{ grades_url }}">Enter Grades</a>
+            {% endif %}
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link active" data-toggle="tab" href="#students_in_class">Students In Class</a>
