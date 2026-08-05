@@ -131,25 +131,35 @@ def student(request, record_id):
         'student_state_id': record.state_id,
         'student_bridge': '2',
     }
+    # The Pre-Upload Blurb is configuration, not per-recommendation data. It
+    # used to be set only inside the `if existing:` branch below, so it
+    # rendered blank on a counselor's first visit to a student (ewu#46).
+    initial['upload_label'] = StudentRecommendation.get_form_message()
+
+    # Derived from the record or from configuration, so they win over anything
+    # in the stored blob.
+    view_owned = {'student', 'student_state_id', 'upload_label'}
+
     existing = None
     for term in current_registration_terms:
         if record.has_recommendation(term.id):
             existing = record.get_recommendation(term.id)
             break
     if existing:
-        r = existing.recommendation
+        # Prefill follows the tenant form's own declared fields. A fixed list
+        # here carried one tenant's Pennsylvania vocabulary (Keystone Exam,
+        # PSSA, GEIP), so any tenant whose rec form declares different fields
+        # got them rendered blank on reopen -- and silently overwritten on the
+        # next submit, since the blank control still validates. The form is
+        # resolved through get_tenant_service('recommendation_form'), so its
+        # base_fields are the tenant's contract and this needs no knowledge of
+        # any tenant's names (ewu#46).
+        stored = existing.recommendation or {}
         initial.update({
-            'student_gpa': r.get('student_gpa'),
-            'student_prereq': r.get('student_prereq'),
-            'student_grade_level': r.get('student_grade_level'),
-            'student_bridge': r.get('student_bridge', '2'),
-            'grade_earned': r.get('grade_earned'),
-            'school_assessment': r.get('school_assessment'),
-            'keystone_exam': r.get('keystone_exam'),
-            'geip': r.get('geip'),
-            'enrolled_in_honors': r.get('enrolled_in_honors'),
+            name: stored[name]
+            for name in StudentRecommendationForm.base_fields
+            if name in stored and name not in view_owned
         })
-        initial['upload_label'] = StudentRecommendation.get_form_message()
 
     if submitted_rec_form.get('unified'):
         recommendation_form = submitted_rec_form['unified']
