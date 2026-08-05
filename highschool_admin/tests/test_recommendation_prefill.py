@@ -159,3 +159,35 @@ class RecommendationPrefillTests(TestCase):
         form = self._get_form()
 
         self.assertEqual(form.initial.get('upload_label'), self.blurb)
+
+
+class DuplicateSectionOptionTests(TestCase):
+    """The per-course recommendation dropdown offers a third outcome.
+
+    A counselor closing out a registration a student entered twice had only
+    Approved and Not Approved, and recording a duplicate as a denial
+    misreports the school's approval rate. HVCC has offered Duplicate Section
+    for some time; `cis` now carries `duplicate` in
+    StudentRegistration.STATUS_OPTIONS so the option can be honoured on save.
+    See ewu#47.
+    """
+
+    def test_duplicate_is_a_valid_registration_status(self):
+        """Guard: the option is written straight through to
+        StudentRegistration.status, so offering it without the status being
+        valid would fail on save rather than in the template."""
+        from cis.models.section import StudentRegistration
+
+        self.assertIn('duplicate', dict(StudentRegistration.STATUS_OPTIONS))
+
+    def test_template_offers_the_duplicate_option(self):
+        from django.template.loader import get_template
+
+        source = get_template(
+            'highschool_admin/student.html').template.source
+
+        # assertIn would dump the whole template on failure.
+        self.assertTrue('value="duplicate"' in source,
+                        'student.html offers no duplicate option')
+        self.assertTrue('Duplicate Section' in source,
+                        'student.html has no Duplicate Section label')

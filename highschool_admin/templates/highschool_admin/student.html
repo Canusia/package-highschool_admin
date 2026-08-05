@@ -452,12 +452,26 @@
                                                     <option value="">Select</option>
                                                     <option value='approved'>Approved</option>
                                                     <option value="not_approved">Not Approved</option>
+                                                    <option value="duplicate">Duplicate Section</option>
                                                 </select>
                                                 {% else %}
                                                 <span class="text-muted">Awaiting recommendation</span>
                                                 {% endif %}
                                                 {% endif %}
                                             </td>
+                                            {# Pay-type column, currently disabled.
+                                               POST-name contract for the tenant's
+                                               recommendation_form service (ewu#48):
+                                               every per-registration control is named
+                                               registration_<field>_<id>, matching the
+                                               registration_<id> status field above.
+                                               clean() and save() must read exactly
+                                               these names:
+                                                 registration_pay_type_<id>
+                                                 registration_non_student_pay_amount_<id>
+                                               Pay type values come from
+                                               StudentRegistration.PAY_OPTIONS; only
+                                               school_partial requires an amount. #}
                                             <!-- <td>
                                                 {% if registration.status == 'applied' %}
                                                 <script>
