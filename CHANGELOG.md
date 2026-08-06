@@ -3,6 +3,45 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.5 — 2026-08-06
+
+### Fixed
+- **Reopening a submitted recommendation no longer loses the tenant's fields.** `views/students.py`
+  rebuilt `initial` from a fixed list of nine field names, five of them Pennsylvania-specific
+  (Keystone Exam, PSSA, GEIP), which belong to a tenant's
+  `myce_tenant_configs/services/recommendation_form.py` rather than to this package. A tenant whose
+  rec form declared different fields saw them render blank on reopen, and submitting again silently
+  overwrote the stored value — the blank control still validates, so nothing errored. Prefill now
+  follows `StudentRecommendationForm.base_fields`, resolved through
+  `get_tenant_service('recommendation_form')`, so this view needs no knowledge of any tenant's
+  vocabulary. `student`, `student_state_id` and `upload_label` stay view-owned and still win over
+  the stored blob. (ewu#46)
+- **The Pre-Upload Blurb renders on a counselor's first visit.** `initial['upload_label']` was set
+  only inside the `if existing:` branch, so the configured message was blank until a recommendation
+  already existed. (ewu#46)
+
+### Added
+- **"Duplicate Section" in the per-course recommendation dropdown.** A counselor closing out a
+  registration a student entered twice had only Approved and Not Approved; recording a duplicate as
+  a denial misreports the school's approval rate. Matches the flow HVCC has offered for some time.
+  (ewu#47)
+- **The disabled pay-type column documents its POST-name contract in place.** Every per-registration
+  control is named `registration_<field>_<id>`, matching the `registration_<id>` status field the
+  same table posts. A tenant's `clean()` was reading two different names, neither of which anything
+  posted, so both guards were dead code. (ewu#48)
+
+### New host requirements
+- **package-cis v0.0.9 or later.** "Duplicate Section" writes `duplicate` straight through to
+  `StudentRegistration.status`; the value must be in `STATUS_OPTIONS` or the save fails.
+
+## v0.0.4 — 2026-08-03
+
+### Added
+- **"Enter Grades" link on the class section page**, pointing at the grade-entry view owned by the
+  optional `grades` package. Uses the `{% url … as %}` form so the link degrades to nothing when
+  `grades` is not installed; no hard dependency is introduced. Requires package-grades v0.0.3 or
+  later to have a route to point at.
+
 ## v0.0.3 — 2026-08-02
 
 ### Fixed
