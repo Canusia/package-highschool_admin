@@ -191,3 +191,40 @@ class DuplicateSectionOptionTests(TestCase):
                         'student.html offers no duplicate option')
         self.assertTrue('Duplicate Section' in source,
                         'student.html has no Duplicate Section label')
+
+
+class RecommendationNotRequiredLabelTests(TestCase):
+    """A course that needs no recommendation says so.
+
+    The Recommendation column rendered an empty cell whenever
+    `needs_recommendation` was false, while the course still showed its name,
+    instructor and status. Counselors read the blank as a broken control --
+    "only one dropdown for two classes" -- when the second course simply was
+    not rec-eligible. Presentation only; `needs_recommendation` itself is
+    correct and unchanged. See ewu#51.
+    """
+
+    def test_template_labels_the_not_required_case(self):
+        from django.template.loader import get_template
+
+        source = get_template(
+            'highschool_admin/student.html').template.source
+
+        self.assertTrue('Recommendation not required' in source,
+                        'student.html has no not-required label')
+
+    def test_the_label_is_reachable_when_a_recommendation_is_not_needed(self):
+        """Guard against the label being added inside the branch that already
+        renders the dropdown, where it could never show."""
+        from django.template.loader import get_template
+
+        source = get_template(
+            'highschool_admin/student.html').template.source
+
+        needs = source.index('registration.needs_recommendation')
+        label = source.index('Recommendation not required')
+        select_close = source.index('</select>', needs)
+
+        self.assertGreater(
+            label, select_close,
+            'not-required label sits inside the needs_recommendation branch')

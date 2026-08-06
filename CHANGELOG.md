@@ -3,6 +3,16 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.6 — 2026-08-06
+
+### Fixed
+- **Courses that need no recommendation now say so.** The Recommendation column rendered an empty
+  cell whenever `needs_recommendation` was false, while the course still showed its name, instructor
+  and status — so counselors read the blank as a broken control ("only one dropdown for two
+  classes") rather than a course that is not rec-eligible. Applied registrations that need no
+  recommendation now show a muted "Recommendation not required". Presentation only;
+  `needs_recommendation` itself is unchanged. (ewu#51)
+
 ## v0.0.5 — 2026-08-06
 
 ### Fixed
