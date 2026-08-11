@@ -1,9 +1,9 @@
 """Enforcement of the ``manage_student_recommendation`` permission.
 
-Before this, the only check in the portal was commented out (in the dead
-``views/home.py`` copy of the student view), so any hsadmin could post a
-recommendation and approve/deny registrations for any student at any of their
-high schools. Three things are pinned here:
+Before this, the only check in the portal was commented out, in a dead
+``views/home.py`` copy of the student view (since deleted), so any hsadmin could
+post a recommendation and approve/deny registrations for any student at any of
+their high schools. Three things are pinned here:
 
   * the permission is keyed to the STUDENT's high school, not the section's
     host high school -- those differ when a student takes a section hosted
