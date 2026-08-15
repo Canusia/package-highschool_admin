@@ -4,7 +4,7 @@ import uuid
 from django.test import TestCase
 from django.urls import reverse
 
-from highschool_admin.highschool_admin.tests.test_student_detail_tabs import (
+from .test_student_detail_tabs import (
     _login, _provision_groups, _provision_menu, _provision_registration_setting,
 )
 from django.contrib.auth import get_user_model

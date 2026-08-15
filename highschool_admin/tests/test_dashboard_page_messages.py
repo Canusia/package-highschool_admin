@@ -24,6 +24,7 @@ from cis.models.highschool_administrator import (
 )
 from cis.models.settings import Setting
 from cis.page_messages import PageMessage
+from . import PKG
 
 User = get_user_model()
 
@@ -96,7 +97,7 @@ class PendingRecommendationsProviderTest(TestCase):
         mock_hs.id = 1
         mock_qs = MagicMock()
         mock_qs.__iter__ = MagicMock(return_value=iter([mock_hs]))
-        with patch('highschool_admin.highschool_admin.page_messages.get_user_highschools', return_value=mock_qs):
+        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=mock_qs):
             with patch('cis.models.section.StudentRegistration.get_pending_recommendations') as mock_gpr:
                 mock_gpr.return_value.count.return_value = 3
                 result = pending_recommendations(request)
@@ -109,7 +110,7 @@ class PendingRecommendationsProviderTest(TestCase):
         request = MagicMock()
         mock_qs = MagicMock()
         mock_qs.__iter__ = MagicMock(return_value=iter([]))
-        with patch('highschool_admin.highschool_admin.page_messages.get_user_highschools', return_value=mock_qs):
+        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=mock_qs):
             with patch('cis.models.section.StudentRegistration.get_pending_recommendations') as mock_gpr:
                 mock_gpr.return_value.count.return_value = 0
                 result = pending_recommendations(request)
@@ -122,7 +123,7 @@ class PendingPayTypeProviderTest(TestCase):
         request = MagicMock()
         mock_qs = MagicMock()
         mock_qs.values_list.return_value = [1]
-        with patch('highschool_admin.highschool_admin.page_messages.get_user_highschools', return_value=mock_qs):
+        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=mock_qs):
             with patch('cis.models.section.StudentRegistration.objects') as mock_obj:
                 mock_obj.filter.return_value.count.return_value = 2
                 result = pending_pay_type(request)
@@ -135,7 +136,7 @@ class PendingPayTypeProviderTest(TestCase):
         request = MagicMock()
         mock_qs = MagicMock()
         mock_qs.values_list.return_value = []
-        with patch('highschool_admin.highschool_admin.page_messages.get_user_highschools', return_value=mock_qs):
+        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=mock_qs):
             with patch('cis.models.section.StudentRegistration.objects') as mock_obj:
                 mock_obj.filter.return_value.count.return_value = 0
                 result = pending_pay_type(request)
@@ -148,7 +149,7 @@ class PendingDropRequestsProviderTest(TestCase):
         request = MagicMock()
         mock_qs = MagicMock()
         mock_qs.values_list.return_value = [1]
-        with patch('highschool_admin.highschool_admin.page_messages.get_user_highschools', return_value=mock_qs):
+        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=mock_qs):
             # patch whichever DropWDRequest gets imported
             import importlib.util
             if importlib.util.find_spec('drop_wd.drop_wd'):
@@ -167,7 +168,7 @@ class PendingDropRequestsProviderTest(TestCase):
         request = MagicMock()
         mock_qs = MagicMock()
         mock_qs.values_list.return_value = []
-        with patch('highschool_admin.highschool_admin.page_messages.get_user_highschools', return_value=mock_qs):
+        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=mock_qs):
             import importlib.util
             if importlib.util.find_spec('drop_wd.drop_wd'):
                 target = 'drop_wd.drop_wd.models.DropWDRequest.objects'
@@ -209,13 +210,13 @@ class HsAdminDashboardViewTest(TestCase):
         )
         c = _login(self.user)
         with patch(
-            'highschool_admin.highschool_admin.page_messages.pending_recommendations',
+            f'{PKG}.page_messages.pending_recommendations',
             return_value=forced_msg,
         ):
             # Re-register the patched function so get_page_messages picks it up.
             # Easier: patch get_page_messages directly for this scope.
             with patch(
-                'highschool_admin.highschool_admin.views.dashboard.get_page_messages',
+                f'{PKG}.views.dashboard.get_page_messages',
                 return_value=[forced_msg],
             ):
                 resp = c.get(reverse('highschool_admin:dashboard'))

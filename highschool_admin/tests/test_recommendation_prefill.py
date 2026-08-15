@@ -33,14 +33,15 @@ from cis.models.highschool_administrator import (
 from cis.models.settings import Setting
 from cis.models.student import Student, StudentRecommendation
 from cis.models.term import AcademicYear, Term
+from . import PKG
 
-from highschool_admin.highschool_admin.tests.test_student_detail_tabs import (
+from .test_student_detail_tabs import (
     _login, _provision_groups, _provision_menu, _provision_registration_setting,
 )
 
 User = get_user_model()
 
-VIEW_MODULE = 'highschool_admin.highschool_admin.views.students'
+VIEW_MODULE = f'{PKG}.views.students'
 
 
 class StandInRecommendationForm(forms.Form):

@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 
 import uuid
 
-from highschool_admin.highschool_admin.tests.test_student_detail_tabs import (
+from .test_student_detail_tabs import (
     _login, _provision_groups, _provision_menu, _provision_registration_setting,
 )
 from cis.models.highschool import HighSchool
