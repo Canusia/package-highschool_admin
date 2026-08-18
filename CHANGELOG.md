@@ -3,6 +3,25 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.9 — 2026-08-18
+
+### Fixed
+- **Version metadata now tracks the tag.** `setup.cfg` / `pyproject.toml` sat at `0.0.7` while
+  tags moved past it, and pip keys upgrades off that string — an existing install read as
+  already satisfied, so `pip install -r requirements.txt` kept the old code even after a
+  tenant bumped its pin, with no error and no warning. v0.0.8 shipped with this defect;
+  install it (or anything earlier) with `--force-reinstall`.
+
+## v0.0.8 — 2026-08-18
+
+### Fixed
+- **The packaged tests run on pip-installed tenants again.** Test modules addressed the app
+  through the nested `highschool_admin.highschool_admin.*` path, which only resolves in a
+  repo that checks this out as an in-tree editable submodule, so 11 tests errored on every
+  tenant installing from a pin — leaving the portal with no regression signal downstream.
+  Imports are relative and patch targets build from `PKG`, resolved once via `find_spec`.
+  A guard test fails if the nested prefix reappears. (ewu#61)
+
 ## v0.0.6 — 2026-08-06
 
 ### Fixed

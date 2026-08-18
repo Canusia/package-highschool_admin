@@ -9,6 +9,15 @@ MyCE **High School Admin** portal, extracted as a pip-installable submodule.
   and `DevHighschoolAdminConfig` (dev, `name='highschool_admin.highschool_admin'`). Only `name` (+ the
   `CONFIGURATORS` `app` key) differs.
 
+## Releasing
+- **Bump `version` in `setup.cfg` and `pyproject.toml` to the tag you are about to cut, in
+  the commit you tag.** pip keys upgrades off that string: if it does not move, an existing
+  install is treated as already satisfied and `pip install -r requirements.txt` keeps the
+  old code even though the tenant's pin moved — no error, no warning. v0.0.8 shipped with
+  the metadata still reading `0.0.7` for this reason.
+- Then bump the tenant's `webapp/requirements.txt` pin (`@vX.Y.Z`) and, in repos that carry
+  this as a submodule, the submodule pointer.
+
 ## Rules
 - **No models, no migrations.** The only persisted state is the `student_tabs` `Setting` row
   (key literal `highschool_admin.settings.student_tabs` — never `str(__name__)`).
