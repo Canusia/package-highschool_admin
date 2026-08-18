@@ -3,6 +3,53 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.10 — 2026-08-18
+
+### Fixed
+- **The add-teacher course-list filter no longer receives the tenant's "Type of course"
+  answer.** `future_sections` renamed this wire parameter to `offering_type` because the
+  add-teacher form gained a tenant-configured `course_type` select of its own (ewu:
+  articulated / dual / cpl) and the two collide in the POST body. This portal had not
+  followed: its JS sent `course_type` and `add_teacher` read it back off `request.data`,
+  so on submit the user's answer to "Type of course" was passed through as
+  `AddNewTeacherForm`'s `offering_type` course-list filter. Inert until now only because
+  `addable_courses_for_user` ignores that argument. The POST body is read for
+  `offering_type` only; the GET query string is the fallback (the rendered form's action
+  is the GET's `build_absolute_uri()`), and `course_type` is still honoured from the query
+  string alone for pages rendered before the rename. `pathways` / `cccl` / `facilitator`
+  are portal vocabulary and stay hardcoded.
+- **The student-detail page no longer 500s when registration terms are unconfigured.**
+  `registration_terms()` returns `None` — not an empty queryset — when the setting row is
+  absent, and `views/students.py` both iterated it and passed it into an `__in` lookup.
+  Guarded with `or []`, the same fix cis applies in
+  `StudentRecommendation.has_recommendation`.
+
+### Changed
+- **Five tenant-policy seams, each defaulting to the previous behaviour.** Rules that vary
+  per deployment were hardcoded — some of them in several places at once, where a tenant
+  that found one copy and missed another was left with a screen quietly showing the wrong
+  rows rather than an error. Each is now a single resolver with an opt-in override,
+  resolved through `cis.services.tenant_services.get_tenant_override`. Names are
+  `hsadmin_`-prefixed because the tenant's `services/registration.py` is shared with cis's
+  own registration overrides.
+
+  | Rule | Was | Override in the tenant's `services/` |
+  |---|---|---|
+  | Statuses counting as pending | `status__in=['applied']` in 3 places | `registration.hsadmin_pending_review_statuses` |
+  | Note types a counselor may read | `meta__type__contains='to_counselor'` in 2 places | `notes.hsadmin_visible_note_types` |
+  | Who may edit a registration's pay type | no seam | `registration.hsadmin_can_update_pay_type` |
+  | Who may recommend for a student | inline in the view | `registration.hsadmin_can_manage_recommendation` |
+  | Which registrations a recommendation covers | inline in the view | `registration.hsadmin_recommendation_registrations` |
+
+  Guard tests fail if either literal reappears outside its resolver.
+
+### Security
+- **An empty visible-note-type list now matches nothing rather than everything.** A tenant
+  configuring "counselors see no notes" would have produced a bare `Q()`, the identity for
+  AND, widening the queryset to every note in scope — a lockdown inverted into a
+  disclosure. Also, a caller denied by `hsadmin_can_update_pay_type` gets 403 whether or
+  not the pay-type review window is open, so the response leaks no window state.
+
 ## v0.0.9 — 2026-08-18
 
 ### Fixed

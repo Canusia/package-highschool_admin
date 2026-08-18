@@ -321,9 +321,16 @@ class RemoveTeachingStatusRequestSerializer(serializers.Serializer):
 
 
 class AddTeacherRequestSerializer(serializers.Serializer):
-    """Serializer for add teacher request validation."""
+    """Serializer for add teacher request validation.
+
+    `offering_type` is the portal's course-list filter, so its three values are
+    portal vocabulary and are correctly hardcoded here. It is deliberately NOT
+    named `course_type`: that is the add-teacher form's own tenant-configured
+    select, whose options come from the `course_types` setting and differ per
+    deployment. The two collided in the POST body before the rename.
+    """
     academic_year_id = serializers.UUIDField(required=True)
-    course_type = serializers.ChoiceField(
+    offering_type = serializers.ChoiceField(
         choices=['pathways', 'cccl', 'facilitator'],
         default='pathways'
     )

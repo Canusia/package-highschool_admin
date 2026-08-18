@@ -38,6 +38,8 @@ from cis.forms.future_sections import (
     HSAdministratorPositionForm,
 )
 
+from ...services.notes import hsadmin_visible_notes_q
+from ...services.registration import pending_review_statuses
 from ..utils import get_user_highschools, get_user_recommendation_highschools
 from .serializers import (
     HSAdminCertificateSerializer,
@@ -70,9 +72,9 @@ class StudentNoteViewSet(viewsets.ReadOnlyModelViewSet):
 
         if student_id:
             records = StudentNote.objects.filter(
+                hsadmin_visible_notes_q(),
                 student__id=student_id,
                 student__highschool__in=get_user_highschools(self.request),
-                meta__type__contains='to_counselor'
             )
         else:
             # get notes for students in high school
@@ -86,8 +88,8 @@ class StudentNoteViewSet(viewsets.ReadOnlyModelViewSet):
             ).values_list('student__id', flat=True)
 
             records = StudentNote.objects.filter(
+                hsadmin_visible_notes_q(),
                 student__id__in=student_ids,
-                meta__type__contains='to_counselor'
             )
 
         # get notes that are replies
@@ -263,7 +265,8 @@ class PendingReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 except Exception:
                     return StudentRegistration.objects.none()
         else:
-            registrations = registrations.filter(status__in=['applied'])
+            registrations = registrations.filter(
+                status__in=pending_review_statuses())
 
         return registrations.select_related(
             'student__user',
@@ -551,6 +554,12 @@ class HSAdminCertificateViewSet(viewsets.ReadOnlyModelViewSet):
 # =============================================================================
 # Future Sections Action ViewSets
 # =============================================================================
+
+# The portal's add-teacher course-list filter. Portal vocabulary, not tenant
+# vocabulary -- the tenant-configured list is the form's `course_type` field,
+# whose options come from the `course_types` setting.
+DEFAULT_OFFERING_TYPE = 'pathways'
+
 
 def _get_fs_config():
     """Get future sections configuration from database."""
@@ -868,13 +877,35 @@ class FutureSectionsActionViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get', 'post'], url_path='add-teacher')
     def add_teacher(self, request):
         """Add a new teacher course certificate."""
-        # Handle both GET (form params) and POST (data params)
+        # Handle both GET (form params) and POST (data params).
+        #
+        # This is the portal's course-list filter -- AddNewTeacherForm's
+        # `offering_type` argument -- NOT the add-teacher form's tenant
+        # configured `course_type` select (ewu: articulated / dual / cpl).
+        # future_sections renamed the wire parameter for exactly this reason;
+        # this portal had not followed, so on submit the user's answer to
+        # "Type of course" arrived here and was passed through as the filter.
+        #
+        # On POST the form's own body carries `course_type`, so the body is
+        # read for `offering_type` only. The GET query string is the fallback:
+        # the rendered form's action is the GET's build_absolute_uri(), so the
+        # offering type rides along with it. `course_type` is still honoured
+        # from the query string alone, for pages rendered before the rename.
         if request.method == 'GET':
             academic_year_id = request.GET.get('academic_year_id')
-            course_type = request.GET.get('course_type', 'pathways')
+            offering_type = (
+                request.GET.get('offering_type')
+                or request.GET.get('course_type')
+                or DEFAULT_OFFERING_TYPE
+            )
         else:
             academic_year_id = request.data.get('academic_year_id')
-            course_type = request.data.get('course_type', 'pathways')
+            offering_type = (
+                request.data.get('offering_type')
+                or request.GET.get('offering_type')
+                or request.GET.get('course_type')
+                or DEFAULT_OFFERING_TYPE
+            )
 
         if not academic_year_id:
             return Response({
@@ -884,10 +915,11 @@ class FutureSectionsActionViewSet(viewsets.ViewSet):
 
         fs_config = _get_fs_config()
         academic_year = get_object_or_404(AcademicYear, pk=academic_year_id)
-        form = AddNewTeacherForm(request, academic_year, course_type)
+        form = AddNewTeacherForm(request, academic_year, offering_type)
 
         if request.method == 'POST':
-            form = AddNewTeacherForm(request, academic_year, course_type, data=request.POST)
+            form = AddNewTeacherForm(
+                request, academic_year, offering_type, data=request.POST)
 
             if form.is_valid():
                 record = form.save(request, academic_year)

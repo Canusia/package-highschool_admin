@@ -16,6 +16,9 @@ from cis.services.table_configs import get_table_config
 from cis.settings.highschool_admin_portal import highschool_admin_portal as portal_lang
 from cis.utils import registration_terms, active_term
 
+from ..services.registration import (
+    can_manage_recommendation, recommendation_registrations,
+)
 from .utils import get_current_hsadmin, get_user_highschools, get_hsadmin_menu
 from ..settings.student_tabs import student_tabs
 
@@ -29,7 +32,10 @@ def student(request, record_id):
         Student, pk=record_id,
         highschool__in=get_user_highschools(request),
     )
-    current_registration_terms = registration_terms()
+    # `or []`: registration_terms() returns None when the setting row is
+    # absent, and the loop below iterates it. Same guard cis applies in
+    # StudentRecommendation.has_recommendation.
+    current_registration_terms = registration_terms() or []
 
     # get all registered classes
     registered_classes = StudentRegistration.objects.filter(
@@ -43,14 +49,10 @@ def student(request, record_id):
     # rec form instance further down in the method
     submitted_rec_form = {}
 
-    # The manage_student_recommendation permission is keyed to the STUDENT's
-    # high school, not the section's host high school -- those differ when a
-    # student takes a section hosted elsewhere, and the recommendation belongs
-    # to the school the student attends. `record` is already scoped to the
-    # admin's schools by the lookup above; this is the second, finer gate.
-    can_recommend = bool(user) and user.can_manage_student_recommendation(
-        record.highschool.id if record.highschool else None
-    )
+    # `record` is already scoped to the admin's schools by the lookup above;
+    # this is the second, finer gate. Which school it keys to is tenant policy
+    # -- see can_manage_recommendation.
+    can_recommend = can_manage_recommendation(user, record)
 
     support_docs_url = reverse(
         'highschool_admin:student', args=[record.id]) + '#support_docs'
@@ -101,9 +103,7 @@ def student(request, record_id):
                 'list-group-item-danger')
             return redirect('highschool_admin:student', record_id=record.id)
 
-        rec_registrations = registered_classes.filter(
-            class_section__term__in=current_registration_terms
-        )
+        rec_registrations = recommendation_registrations(record)
         recommendation_form = StudentRecommendationForm(
             record, rec_registrations, request.POST, request.FILES)
 
@@ -122,9 +122,8 @@ def student(request, record_id):
                 'list-group-item-danger')
             submitted_rec_form['unified'] = recommendation_form
 
-    rec_registrations = registered_classes.filter(
-        class_section__term__in=current_registration_terms
-    ).order_by('class_section__term__label')
+    rec_registrations = recommendation_registrations(record).order_by(
+        'class_section__term__label')
 
     initial = {
         'student': record.id,

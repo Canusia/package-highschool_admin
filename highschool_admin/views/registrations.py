@@ -7,6 +7,7 @@ from cis.models.section import StudentRegistration
 from cis.models.term import Term
 from cis.utils import registration_terms, active_term
 
+from ..services.registration import can_update_pay_type, pending_review_statuses
 from .utils import get_user_highschools
 
 
@@ -55,6 +56,16 @@ def update_registration_status(request):
             student__highschool__in=get_user_highschools(request),
         )
     except (StudentRegistration.DoesNotExist, ValidationError, ValueError, TypeError):
+        return JsonResponse(
+            {'status': 'error', 'message': 'You are not authorized to perform this action.'},
+            status=403,
+        )
+
+    # Tenant policy gate, applied before the review-window check on purpose:
+    # a caller who may not edit this registration gets the same 403 whether or
+    # not the window happens to be open, so the response leaks no window state
+    # and the denial cannot be timed around.
+    if not can_update_pay_type(record, request.user):
         return JsonResponse(
             {'status': 'error', 'message': 'You are not authorized to perform this action.'},
             status=403,
@@ -118,7 +129,7 @@ def get_pending_pay_type(request):
                 registrations_for_term = StudentRegistration.objects.none()
     else:
         registrations_for_term = registrations_for_term.filter(
-            status__in=['applied']
+            status__in=pending_review_statuses()
         )
 
     result = {

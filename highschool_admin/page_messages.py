@@ -3,6 +3,7 @@ import importlib.util
 
 from cis.page_messages import page_message, PageMessage
 from .views.utils import get_user_highschools, get_user_recommendation_highschools
+from .services.registration import pending_review_statuses
 from .settings.student_tabs import student_tabs
 
 
@@ -32,7 +33,7 @@ def pending_pay_type(request):
     count = StudentRegistration.objects.filter(
         student__highschool__id__in=highschools.values_list('id', flat=True),
         pay_type__in=['', None],
-        status__in=['applied'],
+        status__in=pending_review_statuses(),
     ).count()
     if count > 0:
         return PageMessage(
