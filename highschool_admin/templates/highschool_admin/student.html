@@ -458,14 +458,14 @@
                                                 <span class="text-muted">Awaiting recommendation</span>
                                                 {% endif %}
                                                 {% elif registration.status == 'applied' %}
-                                                {# An empty cell here read as a broken control -- the course
+                                                {% comment %} An empty cell here read as a broken control -- the course
                                                    still shows its name, instructor and status, so counselors
                                                    took the blank for a missing dropdown rather than a course
-                                                   that is not rec-eligible (ewu#51). #}
+                                                   that is not rec-eligible (ewu#51). {% endcomment %}
                                                 <span class="text-muted">Recommendation not required</span>
                                                 {% endif %}
                                             </td>
-                                            {# Pay-type column, currently disabled.
+                                            {% comment %} Pay-type column, currently disabled.
                                                POST-name contract for the tenant's
                                                recommendation_form service (ewu#48):
                                                every per-registration control is named
@@ -477,7 +477,7 @@
                                                  registration_non_student_pay_amount_<id>
                                                Pay type values come from
                                                StudentRegistration.PAY_OPTIONS; only
-                                               school_partial requires an amount. #}
+                                               school_partial requires an amount. {% endcomment %}
                                             <!-- <td>
                                                 {% if registration.status == 'applied' %}
                                                 <script>
