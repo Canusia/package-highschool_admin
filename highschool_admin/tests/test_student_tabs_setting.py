@@ -54,3 +54,24 @@ class StudentTabsSettingTests(TestCase):
                                          'show_review': False, 'show_pay_type': False}})
         student_tabs(request=None).install()
         self.assertFalse(student_tabs.show_recommendation())
+
+    def test_run_record_creates_the_row_when_none_exists(self):
+        Setting.objects.filter(key=KEY).delete()
+        form = student_tabs(None, {'show_recommendation': 'on', 'show_review': 'on'})
+        self.assertTrue(form.is_valid(), form.errors)
+        form.run_record()
+        self.assertEqual(Setting.objects.get(key=KEY).value, {
+            'show_recommendation': True, 'show_review': True, 'show_pay_type': False,
+        })
+        self.assertFalse(student_tabs.show_pay_type())
+
+    def test_run_record_overwrites_an_existing_row(self):
+        Setting.objects.update_or_create(
+            key=KEY, defaults={'value': {'show_recommendation': True,
+                                         'show_review': True, 'show_pay_type': True}})
+        form = student_tabs(None, {'show_pay_type': 'on'})
+        self.assertTrue(form.is_valid(), form.errors)
+        form.run_record()
+        self.assertEqual(Setting.objects.get(key=KEY).value, {
+            'show_recommendation': False, 'show_review': False, 'show_pay_type': True,
+        })

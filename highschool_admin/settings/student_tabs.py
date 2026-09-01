@@ -91,8 +91,11 @@ class student_tabs(SettingForm):
             value={f: True for f in _FIELDS})
 
     def run_record(self):
-        setting, _ = Setting.objects.get_or_create(key=self.key)
-        setting.value = self._to_python()
-        setting.save()
+        value = self._to_python()
+        setting, created = Setting.objects.get_or_create(
+            key=self.key, defaults={'value': value})
+        if not created:
+            setting.value = value
+            setting.save()
         return JsonResponse({'message': 'Successfully saved settings',
                              'status': 'success'})
