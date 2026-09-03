@@ -21,8 +21,10 @@ from cis.models.teacher import TeacherCourseCertificate
 import importlib.util
 if importlib.util.find_spec('future_sections.future_sections'):
     from future_sections.future_sections.models import FutureCourse, FutureProjection
+    from future_sections.future_sections.utils import assert_editable
 else:
     from future_sections.models import FutureCourse, FutureProjection
+    from future_sections.utils import assert_editable
 from cis.models.term import AcademicYear
 from cis.models.highschool import HighSchool
 from cis.serializers.note import StudentNoteSerializer
@@ -507,6 +509,8 @@ class CourseRequestViewSet(viewsets.ReadOnlyModelViewSet):
                 'teaching': fc.section_info.get('teaching') if fc.section_info else None,
                 'sections': fc.section_info.get('sections', []) if fc.section_info else [],
                 'section_display': fc.section_display,  # Pre-formatted display from settings
+                'review_status': fc.status,
+                'is_locked': fc.status in FutureCourse.LOCKED_STATUSES,
             }
 
         # Build response data
@@ -526,6 +530,8 @@ class CourseRequestViewSet(viewsets.ReadOnlyModelViewSet):
                 'offering_status': offering.get('teaching'),
                 'sections': offering.get('sections', []),
                 'section_display': offering.get('section_display', []),
+                'review_status': offering.get('review_status'),
+                'is_locked': bool(offering.get('is_locked')),
             })
 
         return Response(data)
@@ -673,6 +679,7 @@ class FutureSectionsActionViewSet(viewsets.ViewSet):
         )
 
         future_course = FutureCourse.get_or_add(teacher_course, academic_year, submitter=request.user)
+        assert_editable(future_course, request)
 
         if future_course.section_info == {}:
             future_course.section_info = {'teaching': 'yes', 'sections': []}
@@ -797,6 +804,7 @@ class FutureSectionsActionViewSet(viewsets.ViewSet):
             {'teaching': 'no'},
             submitter=request.user
         )
+        assert_editable(future_course, request)
 
         if not future_course.meta:
             future_course.meta = {'fp': str(fp.id), 'history': []}
@@ -857,6 +865,7 @@ class FutureSectionsActionViewSet(viewsets.ViewSet):
 
         if future_course_qs.exists():
             future_course = future_course_qs.first()
+            assert_editable(future_course, request)
             fp_id = future_course.meta.get('fp') if future_course.meta else None
 
             if fp_id:
