@@ -86,6 +86,10 @@ router_viewsets = {
     'personnel': PersonnelViewSet,
     'admin-positions': AdminPositionViewSet,
     'course-requests': CourseRequestViewSet,
+    # SUPERSEDED: the live actions are future_sections' own viewset at
+    # /highschool_admin/future_sections/api/actions/. This entry keeps the
+    # old /highschool_admin/api/course-actions/ paths resolving, so they
+    # remain reachable and must stay guarded. See the class docstring.
     'course-actions': FutureSectionsActionViewSet,
     'certificates': HSAdminCertificateViewSet,
 }

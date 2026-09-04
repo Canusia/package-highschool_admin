@@ -4,13 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myce-highschool-admin"
-version = "0.0.11"
+version = "0.0.12"
 authors = [
   { name="Avi Kadaji", email="avi@canusia.com" },
 ]
 description = "MyCE - High School Admin portal"
 readme = "README.md"
 requires-python = ">=3.10"
+# Declared here, not only in setup.cfg: this [project] table has no
+# `dynamic = ["dependencies"]`, so setuptools discards setup.cfg's
+# install_requires entirely and the wheel would ship with no requirements.
+# The floor matters — highschool_admin imports future_sections at module
+# level (FutureCourse/FutureProjection, and assert_editable since 2026.8.0),
+# so adopting this package against an older future_sections is an ImportError
+# that takes out the whole HS-admin API module.
+dependencies = [
+    "Django>=4.2",
+    "future-sections>=2026.8.0",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
