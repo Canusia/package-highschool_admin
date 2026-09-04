@@ -629,7 +629,36 @@ def _add_history_entry(obj, user, action):
 
 
 class FutureSectionsActionViewSet(viewsets.ViewSet):
-    """API ViewSet for future sections actions (mark teaching, not teaching, etc.)."""
+    """SUPERSEDED — do not use, do not extend. Kept only for compatibility.
+
+    The live implementation is `future_sections`'s own
+    `FutureSectionsActionViewSet`, mounted at
+    /highschool_admin/future_sections/api/actions/. That is what the
+    Future Sections page calls; nothing in any template or script here
+    links to this copy any more, and the page that used to
+    (`highschool_admin/views/future_sections.py`) is itself unrouted.
+
+    UNLINKED IS NOT UNREACHABLE. These four actions are still registered
+    (see `urls.py`, router key 'course-actions') and resolve at
+    /highschool_admin/api/course-actions/..., so any authenticated high
+    school administrator can still POST to them directly. They mutate
+    real data: `mark_teaching` calls `FutureCourse.get_or_add` and writes
+    `section_info`, and `remove_teaching_status` deletes rows. Two
+    penetration-test regressions already target this surface —
+    `cis/tests/test_pt33_remove_teaching_status_csrf.py` and
+    `cis/tests/test_pt38_remove_teaching_status_window.py` — so treat it
+    as live attack surface, not as dead code.
+
+    Consequently every guarantee the live viewset enforces must be
+    mirrored here until this is deleted. The section-request review lock
+    is enforced by the `assert_editable` calls in the mutating actions
+    below; `tests/test_legacy_course_actions_lock.py` pins them.
+
+    Deleting this (with its router entry, `teaching_course.html`, and the
+    unrouted page view) is the intended end state, but it needs a check
+    across the other tenant repos first, since theirs may still route
+    their own copy.
+    """
     permission_classes = [HSADMIN_user_only]
 
     def _validate_highschool_access(self, request, teacher_course):

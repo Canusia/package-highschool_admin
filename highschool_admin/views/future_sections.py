@@ -1,3 +1,17 @@
+"""UNROUTED — dead. No URLconf refers to anything in this module.
+
+The Future Sections page is served by `future_sections`'s own
+`FutureSectionsPageView` at /highschool_admin/future_sections/ (see the
+note in `highschool_admin/urls.py`). Nothing here is reachable, and the
+template it renders, `highschool_admin/future_sections.html`, references
+URL names that no longer resolve — rendering it would raise
+NoReverseMatch.
+
+Do not add to this module or revive it. Unlike the legacy
+`FutureSectionsActionViewSet`, which is unlinked but still routed, this
+one really is unreachable. Kept pending a cross-tenant check before
+deletion.
+"""
 import datetime
 
 from django.shortcuts import render
