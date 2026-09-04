@@ -3,6 +3,43 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.12 — 2026-09-04
+
+Companion release to `future_sections` v2026.8.0, which introduced the section-request
+review quorum and its edit lock. **Upgrade `future_sections` first** — see Requirements
+below.
+
+### Requirements
+- **Now declares `future-sections >= 2026.8.0`.** This portal imports `future_sections` at
+  module level (`FutureCourse` and `FutureProjection` long-standing, `assert_editable` as of
+  this release), so installing it against an older `future_sections` raises `ImportError` on
+  import and takes out the whole HS-admin API module rather than degrading one feature. The
+  dependency is declared in `pyproject.toml`'s `[project]` table: the `[project]` table has
+  no `dynamic = ["dependencies"]`, so setuptools silently discards `setup.cfg`'s
+  `install_requires` — the previously declared `Django>=4.2` had never reached a built wheel
+  either.
+
+### Fixed
+- **The legacy `course-actions` viewset now enforces the review lock.** `future_sections`
+  serves the live Future Sections page, so nothing in this portal calls its own
+  `FutureSectionsActionViewSet` any more — but all four of its actions are still registered
+  and resolve at `/highschool_admin/api/course-actions/…`, and `mark_teaching` still calls
+  `FutureCourse.get_or_add` and writes `section_info`. Without a guard it was a way around
+  the new lock for any authenticated high school administrator. `assert_editable` now runs
+  on `mark-teaching`, `mark-not-teaching` and `remove-teaching-status`, after each resolves
+  its record and before any mutation.
+
+### Changed
+- **Superseded code is labelled rather than deleted**, pending a check across the other
+  tenant repos. The docstrings distinguish two cases that look alike: the `course-actions`
+  viewset is *unlinked but still routed* — reachable by URL, mutating real data, and already
+  the target of two penetration-test regressions — while `views/future_sections.py` is
+  genuinely unreachable, with no URLconf referring to it and a template naming a URL that no
+  longer resolves.
+- The course-requests payload reports `review_status` and `is_locked` per row. Note this is
+  the copy of that viewset with no live caller; the equivalent change for the page users
+  actually see shipped in `future_sections` v2026.8.0.
+
 ## v0.0.10 — 2026-08-18
 
 ### Fixed
