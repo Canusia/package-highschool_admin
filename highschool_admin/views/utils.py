@@ -42,20 +42,14 @@ def get_hsadmin_menu():
     Setting, falling back to the legacy :data:`cis.menu.HS_ADMIN_MENU` list when
     the Setting is missing or its stored JSON is unparseable.
 
-    Returned as a list of nav-item dicts. Pass it to ``draw_menu`` as the data
-    argument and use it for the dashboard ``nav_items`` tiles so both share one
-    source of truth.
+    Returned as a list of nav-item dicts, with items flagged ``"display": false``
+    (and their hidden sub_menu children) already dropped. Pass it to ``draw_menu``
+    as the data argument and use it for the dashboard ``nav_items`` tiles so both
+    share one source of truth.
     """
-    import json
+    from cis.menu import HS_ADMIN_MENU, get_role_menu
 
-    from cis.menu import HS_ADMIN_MENU
-    from cis.settings.menu import menu as menu_settings
-
-    conf = menu_settings.from_db()
-    try:
-        return json.loads(conf.get('highschool_admin_menu'))
-    except (TypeError, ValueError):
-        return HS_ADMIN_MENU
+    return get_role_menu('highschool_admin') or HS_ADMIN_MENU
 
 
 def ajax_requests(request):

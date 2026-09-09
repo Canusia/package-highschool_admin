@@ -3,6 +3,19 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.13 — 2026-09-09
+
+Companion release to `cis` v0.0.34, which adds a `display` flag to the menu JSON.
+**Upgrade `cis` first** — `get_hsadmin_menu` imports `cis.menu.get_role_menu`, which
+does not exist before v0.0.34.
+
+### Changed
+- **`get_hsadmin_menu` resolves the menu through `cis.menu.get_role_menu`.** Menu items
+  (and `sub_menu` children) flagged `"display": false` in the `cis.settings.menu` Setting
+  are now dropped from the value it returns, so the dashboard tiles hide the same items the
+  sidebar already hid. The fallback to `cis.menu.HS_ADMIN_MENU` when the Setting is missing
+  or unparseable is unchanged.
+
 ## v0.0.12 — 2026-09-04
 
 Companion release to `future_sections` v2026.8.0, which introduced the section-request
