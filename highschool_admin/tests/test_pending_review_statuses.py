@@ -71,10 +71,12 @@ class CallSitesUseTheResolverTests(SimpleTestCase):
         manager, qs = _chained_manager()
         hs = MagicMock()
         hs.values_list.return_value = [1]
-        with patch(f'{PKG}.page_messages.get_user_highschools', return_value=hs), \
+        with patch(f'{PKG}.page_messages.student_tabs') as tabs, \
+             patch(f'{PKG}.page_messages.get_user_highschools', return_value=hs), \
              patch(f'{PKG}.page_messages.pending_review_statuses',
                    return_value=SENTINEL), \
              patch('cis.models.section.StudentRegistration.objects', manager):
+            tabs.show_pay_type.return_value = True
             pending_pay_type(MagicMock())
         self.assertIn(SENTINEL, _status_filters(qs, manager))
 

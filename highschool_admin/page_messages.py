@@ -28,6 +28,8 @@ def pending_recommendations(request):
 
 @page_message('highschool_admin', 'dashboard')
 def pending_pay_type(request):
+    if not student_tabs.show_pay_type():
+        return None
     from cis.models.section import StudentRegistration
     highschools = get_user_highschools(request)
     count = StudentRegistration.objects.filter(
