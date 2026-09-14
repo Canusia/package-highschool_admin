@@ -5,6 +5,15 @@ Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
 ## v0.0.14 — 2026-09-14
 
+### Added
+- **Tenant seam in the student page's Supporting Documents tab** (#11). An empty
+  `highschool_admin/_support_docs_extra.html` is included at the top of `#support_docs`;
+  tenants override it from their project `templates/` dir. Context gains
+  `support_doc_registrations` (registrations in the current registration terms),
+  `support_docs_url`, and `support_docs_extra` — the return of the opt-in tenant hook
+  `hsadmin_support_docs_extra(*, student, registrations, support_docs, support_docs_url)`
+  in `services/required_documents.py` (`{}` when absent). No change without an override.
+
 ### Fixed
 - **Dashboard "needing payment type review" message honours `show_pay_type`** (#8). When
   the Pay Type tab is hidden in `highschool_admin.settings.student_tabs`, the message is no
