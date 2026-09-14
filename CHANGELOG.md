@@ -3,6 +3,17 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.14 — 2026-09-14
+
+### Fixed
+- **Dashboard "needing payment type review" message honours `show_pay_type`** (#8). When
+  the Pay Type tab is hidden in `highschool_admin.settings.student_tabs`, the message is no
+  longer shown. Unset keys still default to True, so unconfigured tenants are unaffected.
+- **`/highschool_admin/api/registration/` no longer 500s on non-numeric class numbers** (#9).
+  `class_section.class_number` is serialized as a string (matching the `CharField` model
+  column), so section codes like `BIOL-1408-CDU09` work. Numeric tenants now receive
+  `"12345"` instead of `12345`; the only consumer (`students-rec.js`) interpolates it.
+
 ## v0.0.13 — 2026-09-09
 
 Companion release to `cis` v0.0.34, which adds a `display` flag to the menu JSON.

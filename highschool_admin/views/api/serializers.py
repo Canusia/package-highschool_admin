@@ -131,7 +131,7 @@ class HSAdminRegClassSectionSerializer(serializers.Serializer):
     """Minimal class section serializer for registration list."""
     course = HSAdminRegCourseSerializer()
     section_number = serializers.CharField()
-    class_number = serializers.IntegerField()
+    class_number = serializers.CharField()
 
 
 class HSAdminRegReviewerSerializer(serializers.Serializer):

@@ -5,7 +5,8 @@ Stored in the Setting model under key ``highschool_admin.settings.student_tabs``
     {'show_recommendation': bool, 'show_review': bool, 'show_pay_type': bool}
 
 Controls the Recommendation / Review / Pay Type tabs on the students list page
-and the student detail page, and the "pending recommendation" dashboard message.
+and the student detail page, and the matching "pending recommendation" and
+"needing payment type review" dashboard messages.
 Absent keys default to True (backward compatible — tabs stay visible until an
 admin unchecks them).
 """
@@ -31,7 +32,8 @@ class SettingForm(forms.Form):
         help_text='Show the application Review tab.')
     show_pay_type = forms.BooleanField(
         required=False, label='Show Pay Type tab',
-        help_text='Show the Pending Pay Type tab.')
+        help_text='Show the Pending Pay Type tab and the dashboard '
+                  '"needing payment type review" message.')
 
     def _to_python(self):
         return {f: bool(self.cleaned_data.get(f)) for f in _FIELDS}
