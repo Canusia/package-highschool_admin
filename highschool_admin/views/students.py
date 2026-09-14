@@ -20,6 +20,7 @@ from ..services.registration import (
     can_manage_recommendation, recommendation_registrations,
 )
 from .utils import get_current_hsadmin, get_user_highschools, get_hsadmin_menu
+from ..services.support_docs import support_docs_extra
 from ..settings.student_tabs import student_tabs
 
 
@@ -167,6 +168,13 @@ def student(request, record_id):
         recommendation_form = StudentRecommendationForm(
             student=record, current_registrations=rec_registrations, initial=initial)
 
+    support_docs = StudentSupportingDocument.objects.filter(
+        student=record).order_by('-uploaded_on')
+    # For the Supporting Documents tab seam (_support_docs_extra.html).
+    support_doc_registrations = StudentRegistration.objects.filter(
+        student=record, class_section__term__in=current_registration_terms,
+    ).select_related('class_section__course', 'class_section__term')
+
     return render(
         request,
         'highschool_admin/student.html',
@@ -185,8 +193,11 @@ def student(request, record_id):
             'intro': portal_lang(request).from_db().get('student_blurb', 'Change me'),
             'notes_api_url': f'/highschool_admin/api/student_notes/?format=datatables&student_id={record.id}',
             'support_doc_form': support_doc_form,
-            'support_docs': StudentSupportingDocument.objects.filter(
-                student=record).order_by('-uploaded_on'),
+            'support_docs': support_docs,
+            'support_docs_url': support_docs_url,
+            'support_doc_registrations': support_doc_registrations,
+            'support_docs_extra': support_docs_extra(
+                record, support_doc_registrations, support_docs, support_docs_url),
             'tab_setting': student_tabs.tabs(),
         })
 
