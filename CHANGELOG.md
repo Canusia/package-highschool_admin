@@ -3,6 +3,16 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## Unreleased
+
+### Fixed
+- **Forced password change no longer logs the HS admin out** (#14, package-cis#55). The
+  dashboard now calls `update_session_auth_hash()` after `cisForceSetPasswordForm.save()`.
+  Because that also cycles the session key, the session's verified `TwoStep` row is moved
+  to the new key, so the HS admin isn't sent back to `/two_step/verify`. The success
+  message is tagged `password_changed`, which package-cis v0.0.40+'s `logged-base.html`
+  shows as a popup; older `cis` ignores the tag.
+
 ## v0.0.14 — 2026-09-14
 
 ### Added

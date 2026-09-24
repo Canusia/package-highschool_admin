@@ -34,11 +34,23 @@ def dashboard(request):
         form = cisForceSetPasswordForm(request.user, request.POST, form_action=dashboard_url, use_ajax=False)
         if form.is_valid():
             form.save(request.user)
+            # set_password rotates the session auth hash -- keep the HS admin
+            # logged in (#14, package-cis#55). That also cycles the session
+            # key, and two-step verification is stored per session key, so
+            # carry it over or the next request goes back to /two_step/verify.
+            from django.contrib.auth import update_session_auth_hash
+            from two_step.models import TwoStep
+            old_session_key = request.session.session_key
+            update_session_auth_hash(request, request.user)
+            TwoStep.objects.filter(
+                session_id=old_session_key, user=request.user
+            ).update(session_id=request.session.session_key)
+            # 'password_changed' also shows it as a popup (cis/logged-base.html)
             messages.add_message(
                 request,
                 messages.SUCCESS,
                 'Successfully updated password.',
-                'list-group-item-success'
+                'list-group-item-success password_changed'
             )
             return redirect('highschool_admin:dashboard')
 
