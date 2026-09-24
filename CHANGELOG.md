@@ -3,7 +3,7 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
-## Unreleased
+## v0.0.15 — 2026-09-24
 
 ### Fixed
 - **Forced password change no longer logs the HS admin out** (#14, package-cis#55). The
