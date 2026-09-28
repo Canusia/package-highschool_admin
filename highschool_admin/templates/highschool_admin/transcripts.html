@@ -1,5 +1,6 @@
 {% extends "highschool_admin/base_hsadmin.html" %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block title %}Transcripts{% endblock %}
 
@@ -26,6 +27,8 @@
 <!-- Configuration data for JavaScript -->
 <div id="transcripts-config"
      data-transcripts-url="{% url 'highschool_admin:get_transcripts' %}"
+     data-upload-url="{% url 'highschool_admin:upload_transcript' %}"
+     data-delete-url-template="{% url 'highschool_admin:delete_transcript' '00000000-0000-0000-0000-000000000000' %}"
      style="display: none;"></div>
 
 <!-- Tab panes -->
@@ -33,20 +36,41 @@
     <div class="tab-pane active" id="transcripts">
         <div class="row">
             <div class="col-md-12">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Send a File to the College</h5>
+                        <form id="frm_upload_transcript" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ upload_form|crispy }}
+                            <div id="upload_status"></div>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-upload"></i>&nbsp;Upload
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
                         <p class="alert alert-info">
-                            Below is the list of transcript files
+                            Below is the list of files. A file shows as Reviewed once the college
+                            has looked at it. You can delete a file you uploaded until it is reviewed.
                         </p>
                         <div class="table-responsive">
                             <table class="table dataTable" id="tbl_transcripts">
                                 <thead>
                                     <tr>
                                         <th>High School</th>
+                                        <th>Term</th>
                                         <th>Uploaded On</th>
                                         <th>Uploaded By</th>
                                         <th>Description</th>
                                         <th>File</th>
+                                        <th>Reviewed</th>
+                                        <th><span class="sr-only">Actions</span></th>
                                     </tr>
                                 </thead>
                             </table>

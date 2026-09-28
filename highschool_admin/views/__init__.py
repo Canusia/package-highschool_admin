@@ -72,6 +72,8 @@ from .personnel import (
 from .transcripts import (
     transcripts,
     get_transcripts,
+    upload_transcript,
+    delete_transcript,
     download_transcript,
 )
 
@@ -143,6 +145,8 @@ __all__ = [
     # Transcripts
     'transcripts',
     'get_transcripts',
+    'upload_transcript',
+    'delete_transcript',
     'download_transcript',
     # Certificates
     'certificates_index',

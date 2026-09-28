@@ -40,6 +40,8 @@ from .views import (
     # Transcripts
     transcripts,
     get_transcripts,
+    upload_transcript,
+    delete_transcript,
     download_transcript,
     # Certificates
     certificates_index,
@@ -121,6 +123,8 @@ urlpatterns = [
     path('students/', hsadmin_view(students), name='students'),
     path('transcripts/', hsadmin_view(transcripts), name='transcripts'),
     path('transcripts/get', hsadmin_view(get_transcripts), name='get_transcripts'),
+    path('transcripts/upload', hsadmin_view(upload_transcript), name='upload_transcript'),
+    path('transcript/<uuid:record_id>/delete', hsadmin_view(delete_transcript), name='delete_transcript'),
     path('transcript/<uuid:record_id>', hsadmin_view(download_transcript), name='download_transcript'),
     path('certificates/', hsadmin_view(certificates_index), name='certificates'),
     path('student_import/', hsadmin_view(student_import), name='student_import'),
