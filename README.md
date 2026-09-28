@@ -26,7 +26,9 @@ install it outside a MyCE tenant.
 
 **MyCE host apps / frameworks it imports directly**
 
-- `cis` — `CustomUser`, role helpers (`user_has_highschool_admin_role`), `HighSchool`,
+- `cis` **>= v0.0.43** (declared: `myce_cis>=0.0.43`) — the Transcripts upload uses cis's
+  `HSTranscriptUploadForm`, `HighSchoolTranscript.term`/review fields and
+  `cis.services.hs_uploads` (package-cis #56). Also `CustomUser`, role helpers (`user_has_highschool_admin_role`), `HighSchool`,
   `HSAdministrator`, `Student`, `StudentRegistration` (incl. `get_pending_recommendations` /
   pending-review / pending-pay-type queries), `Term`, `Note`, `cis.models.settings.Setting`,
   importer services, `cis.menu`, `cis.storage_backend.PrivateMediaStorage`, and the

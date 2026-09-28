@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myce-highschool-admin"
-version = "0.0.15"
+version = "0.0.16"
 authors = [
   { name="Avi Kadaji", email="avi@canusia.com" },
 ]
@@ -18,9 +18,15 @@ requires-python = ">=3.10"
 # level (FutureCourse/FutureProjection, and assert_editable since 2026.8.0),
 # so adopting this package against an older future_sections is an ImportError
 # that takes out the whole HS-admin API module.
+#
+# myce_cis>=0.0.43: the Transcripts upload (#15) imports cis's
+# HSTranscriptUploadForm term/type/size rules, HighSchoolTranscript.term and
+# review fields, and cis.services.hs_uploads (package-cis #56). An older cis
+# is an ImportError on the HS-admin views module.
 dependencies = [
     "Django>=4.2",
     "future-sections>=2026.8.0",
+    "myce_cis>=0.0.43",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
