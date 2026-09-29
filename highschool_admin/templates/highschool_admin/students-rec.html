@@ -66,6 +66,11 @@
     <li class="nav-item">
         <a class="nav-link" data-toggle="tab" href="#students">Students by Term</a>
     </li>
+    {% if tab_setting.show_no_classes %}
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#no_classes">No Classes</a>
+    </li>
+    {% endif %}
 </ul>
 
 <!-- Tab panes -->
@@ -256,6 +261,35 @@
             </div>
         </div>
     </div>
+    {% if tab_setting.show_no_classes %}
+    <!-- No Classes Tab -->
+    <div class="tab-pane" id="no_classes">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-top-0">
+                    <div class="card-body">
+                        <p class="alert alert-info">
+                            Below is the list of students linked to your high school(s) who have not applied for any class.
+                        </p>
+                        <div class="table-responsive">
+                            <table style="width: 100%" class="table table-striped dataTable" id="tbl_no_classes">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>High School</th>
+                                        <th>Username</th>
+                                        <th>Graduation Year</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Details Modal -->

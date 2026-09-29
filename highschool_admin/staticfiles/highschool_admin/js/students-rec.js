@@ -308,6 +308,38 @@ jQuery(document).ready(function ($) {
         });
     }
 
+    // No Classes tab (#16): present only when the student_tabs setting shows
+    // it; loaded the first time it is opened.
+    function get_students_without_classes() {
+        $("#tbl_no_classes").DataTable({
+            language: {
+                'emptyTable': 'All students linked to your high school(s) have applied for classes.'
+            },
+            dom: datatableDom,
+            buttons: datatableButtons,
+            ajax: '/highschool_admin/api/students-without-classes/?format=datatables',
+            lengthMenu: [30, 50, 100],
+            order: [],
+            columns: [
+                {'data': 'name', 'width': '30%'},
+                {'data': 'highschool', 'width': '25%'},
+                {'data': 'username', 'width': '15%'},
+                {'data': 'graduation_year', 'width': '15%'},
+                {
+                    'data': 'details',
+                    'width': '15%',
+                    'orderable': false,
+                    'searchable': false,
+                    'render': function (data, type, row, meta) {
+                        return "<a class='btn btn-sm btn-primary' href='" + row.details + "'>View Details</a>";
+                    }
+                }
+            ]
+        });
+    }
+
+    $('a[data-toggle="tab"][href="#no_classes"]').one('shown.bs.tab', get_students_without_classes);
+
     get_pending_rec();
     get_students_in_highschool();
     get_registrations_in_highschool();

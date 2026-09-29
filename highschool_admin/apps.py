@@ -17,8 +17,8 @@ class HighschoolAdminConfig(AppConfig):
             'app': 'highschool_admin',
             'name': 'student_tabs',
             'title': 'Student Page Tabs',
-            'description': 'Show/hide the Recommendation, Review, and Pay Type '
-                           'tabs on the students pages.',
+            'description': 'Show/hide the Recommendation, Review, Pay Type '
+                           'and No Classes tabs on the students pages.',
             'categories': ['1'],
         },
     ]
@@ -37,8 +37,8 @@ class DevHighschoolAdminConfig(HighschoolAdminConfig):
             'app': 'highschool_admin.highschool_admin',
             'name': 'student_tabs',
             'title': 'Student Page Tabs',
-            'description': 'Show/hide the Recommendation, Review, and Pay Type '
-                           'tabs on the students pages.',
+            'description': 'Show/hide the Recommendation, Review, Pay Type '
+                           'and No Classes tabs on the students pages.',
             'categories': ['1'],
         },
     ]

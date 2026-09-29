@@ -11,11 +11,13 @@ class StudentTabsSettingTests(TestCase):
         Setting.objects.filter(key=KEY).delete()
         self.assertEqual(
             student_tabs.tabs(),
-            {'show_recommendation': True, 'show_review': True, 'show_pay_type': True},
+            {'show_recommendation': True, 'show_review': True, 'show_pay_type': True,
+             'show_no_classes': True},
         )
         self.assertTrue(student_tabs.show_recommendation())
         self.assertTrue(student_tabs.show_review())
         self.assertTrue(student_tabs.show_pay_type())
+        self.assertTrue(student_tabs.show_no_classes())
 
     def test_reads_stored_booleans(self):
         Setting.objects.update_or_create(
@@ -26,8 +28,10 @@ class StudentTabsSettingTests(TestCase):
                 'show_pay_type': False,
             }},
         )
+        # A row saved before show_no_classes existed shows the new tab (#16).
         self.assertEqual(student_tabs.tabs(), {
             'show_recommendation': False, 'show_review': True, 'show_pay_type': False,
+            'show_no_classes': True,
         })
         self.assertFalse(student_tabs.show_recommendation())
         self.assertTrue(student_tabs.show_review())
@@ -47,6 +51,7 @@ class StudentTabsSettingTests(TestCase):
         v = Setting.objects.get(key=KEY).value
         self.assertEqual(v, {
             'show_recommendation': True, 'show_review': True, 'show_pay_type': True,
+            'show_no_classes': True,
         })
         # re-install must not clobber an admin's saved value
         Setting.objects.update_or_create(
@@ -62,6 +67,7 @@ class StudentTabsSettingTests(TestCase):
         form.run_record()
         self.assertEqual(Setting.objects.get(key=KEY).value, {
             'show_recommendation': True, 'show_review': True, 'show_pay_type': False,
+            'show_no_classes': False,
         })
         self.assertFalse(student_tabs.show_pay_type())
 
@@ -74,4 +80,5 @@ class StudentTabsSettingTests(TestCase):
         form.run_record()
         self.assertEqual(Setting.objects.get(key=KEY).value, {
             'show_recommendation': False, 'show_review': False, 'show_pay_type': True,
+            'show_no_classes': False,
         })

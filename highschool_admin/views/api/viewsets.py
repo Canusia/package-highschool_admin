@@ -3,6 +3,7 @@ import json
 import uuid
 
 from django.db import transaction
+from django.db.models import Exists, OuterRef
 from django.forms.formsets import formset_factory
 from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
@@ -139,6 +140,23 @@ class StudentViewSet(viewsets.ReadOnlyModelViewSet):
             highschool__in=highschools,
             pk__in=student_ids
         ).select_related('user', 'highschool')
+
+
+class StudentsWithoutClassesViewSet(viewsets.ReadOnlyModelViewSet):
+    """Students at the admin's high school(s) who have never had a class
+    registration, in any term or status (#16). Inactive accounts are left
+    out: this is a follow-up list for counselors."""
+    serializer_class = HSAdminStudentSerializer
+    permission_classes = [HSADMIN_user_only]
+
+    def get_queryset(self):
+        has_registration = StudentRegistration.objects.filter(student=OuterRef('pk'))
+        return (Student.objects
+                .filter(highschool__in=get_user_highschools(self.request),
+                        user__is_active=True)
+                .exclude(Exists(has_registration))
+                .select_related('user', 'highschool')
+                .order_by('user__last_name', 'user__first_name', 'pk'))
 
 
 # =============================================================================

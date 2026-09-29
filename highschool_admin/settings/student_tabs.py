@@ -2,10 +2,11 @@
 
 Stored in the Setting model under key ``highschool_admin.settings.student_tabs``::
 
-    {'show_recommendation': bool, 'show_review': bool, 'show_pay_type': bool}
+    {'show_recommendation': bool, 'show_review': bool, 'show_pay_type': bool,
+     'show_no_classes': bool}
 
 Controls the Recommendation / Review / Pay Type tabs on the students list page
-and the student detail page, and the matching "pending recommendation" and
+and the student detail page, the No Classes tab on the students list page, and the matching "pending recommendation" and
 "needing payment type review" dashboard messages.
 Absent keys default to True (backward compatible — tabs stay visible until an
 admin unchecks them).
@@ -19,7 +20,7 @@ from crispy_forms.layout import Submit
 
 from cis.models.settings import Setting
 
-_FIELDS = ('show_recommendation', 'show_review', 'show_pay_type')
+_FIELDS = ('show_recommendation', 'show_review', 'show_pay_type', 'show_no_classes')
 
 
 class SettingForm(forms.Form):
@@ -34,6 +35,10 @@ class SettingForm(forms.Form):
         required=False, label='Show Pay Type tab',
         help_text='Show the Pending Pay Type tab and the dashboard '
                   '"needing payment type review" message.')
+    show_no_classes = forms.BooleanField(
+        required=False, label='Show No Classes tab',
+        help_text='Show the No Classes tab: students linked to your high '
+                  'school(s) who have never had a class registration.')
 
     def _to_python(self):
         return {f: bool(self.cleaned_data.get(f)) for f in _FIELDS}
@@ -64,7 +69,7 @@ class student_tabs(SettingForm):
 
     @classmethod
     def tabs(cls):
-        """The three resolved booleans; absent keys default to True."""
+        """The resolved booleans; absent keys default to True."""
         cfg = cls.get_config()
         return {f: bool(cfg.get(f, True)) for f in _FIELDS}
 
@@ -79,6 +84,10 @@ class student_tabs(SettingForm):
     @classmethod
     def show_pay_type(cls):
         return cls.tabs()['show_pay_type']
+
+    @classmethod
+    def show_no_classes(cls):
+        return cls.tabs()['show_no_classes']
 
     @classmethod
     def from_db(cls):
