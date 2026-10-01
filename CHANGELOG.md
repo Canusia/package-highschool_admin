@@ -3,6 +3,14 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.18 — 2026-10-01
+
+### Added
+- **Per-campus branding** (package-cis#61). The portal's base templates take the logo from
+  `{% brand_logo_url %}` and add `{% brand_css %}` after `style.css`, so each campus on a
+  multi-campus deployment shows its own logo, colours and favicon. Single-campus tenants
+  render as before. **Requires `myce_cis>=0.1.5a`**, which provides the `brand` tag library.
+
 ## v0.0.15 — 2026-09-24
 
 ### Fixed

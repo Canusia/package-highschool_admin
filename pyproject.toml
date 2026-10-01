@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myce-highschool-admin"
-version = "0.0.17"
+version = "0.0.18"
 authors = [
   { name="Avi Kadaji", email="avi@canusia.com" },
 ]
@@ -23,10 +23,13 @@ requires-python = ">=3.10"
 # HSTranscriptUploadForm term/type/size rules, HighSchoolTranscript.term and
 # review fields, and cis.services.hs_uploads (package-cis #56). An older cis
 # is an ImportError on the HS-admin views module.
+#
+# myce_cis>=0.1.5a: logged-base*.html load the `brand` tag library
+# (package-cis #61); an older cis is a TemplateSyntaxError on every page.
 dependencies = [
     "Django>=4.2",
     "future-sections>=2026.8.0",
-    "myce_cis>=0.0.43",
+    "myce_cis>=0.1.5a",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
