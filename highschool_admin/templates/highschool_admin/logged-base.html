@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  {% load static %}
+  {% load static brand %}
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <link rel="stylesheet" href="{% static 'css/sb-admin-2.min.css'%}">
   <link rel="stylesheet" href="{% static 'css/style.css'%}">
+  {% brand_css %}
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
 
@@ -97,7 +98,7 @@
     <a class="sidebar-brand center-text" href="{% url 'logged_home' %}">
       <div class="sidebar-brand-text1">
         {% if MYCE_SETTINGS.show_logo == 'True' %}
-        <img src="{% static 'images/logo.png' %}" class="d-none d-sm-inline-block" style='max-height: 60px;' alt="Logo">
+        <img src="{% brand_logo_url %}" class="d-none d-sm-inline-block" style='max-height: 60px;' alt="Logo">
         <!-- <img src="{% static 'images/myce.png' %}" class="d-none d-sm-inline-block" style="height: 60px; padding-left: 10px; margin-left: 20px; border-left: 2px solid #f47920;" alt="Logo"> -->
         {%else%}
         {{MYCE_SETTINGS.site_name }}
@@ -107,7 +108,7 @@
     <hr class="sidebar-divider my-0">
     <ul class="navbar-nav ml-auto">
       <li class="nav-item d-block d-sm-none ">
-        <img src="{% static 'images/logo.png' %}" style="max-height: 60px;" class="pt-1" alt="Logo">
+        <img src="{% brand_logo_url %}" style="max-height: 60px;" class="pt-1" alt="Logo">
       </li>
       {% if user.is_impersonate %}
       <li class="nav-item">
