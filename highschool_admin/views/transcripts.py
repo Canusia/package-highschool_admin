@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 
 from cis.forms.highschool import HSTranscriptUploadForm
 from cis.models.highschool import HighSchool, HighSchoolTranscript
+from cis.highschool_scope import picker_queryset
 from cis.menu import draw_menu
 from cis.services.hs_uploads import notify_hs_upload
 from cis.settings.highschool_admin_portal import highschool_admin_portal as portal_lang
@@ -24,6 +25,9 @@ class HSAdminTranscriptUploadForm(HSTranscriptUploadForm):
 
     def __init__(self, highschools, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Only schools active on the current campus, within the admin's own.
+        highschools = highschools.filter(
+            pk__in=picker_queryset().values('pk'))
         self.fields['highschool'].queryset = highschools
         if highschools.count() == 1:
             self.fields['highschool'].initial = highschools.first()
