@@ -49,28 +49,37 @@ class TranscriptSchoolPickerTests(TestCase):
     def _form(self, data=None):
         return HSAdminTranscriptUploadForm(self.managed, data)
 
+    # Spec section 2: the HS admin portal is unchanged. The admin's own
+    # schools are offered whatever their campus links say.
+
     @override_settings(MULTI_CAMPUS=True)
-    def test_multi_campus_excludes_other_campus_school(self):
+    def test_multi_campus_offers_every_managed_school(self):
         with campus_context(self.a):
             qs = self._form().fields['highschool'].queryset
-            self.assertEqual(list(qs), [self.mine])
+            self.assertEqual(
+                {h.pk for h in qs}, {self.mine.pk, self.foreign.pk, self.inactive.pk})
 
     @override_settings(MULTI_CAMPUS=True)
-    def test_multi_campus_foreign_post_is_rejected(self):
+    def test_inactive_linked_school_admin_gets_upload_form(self):
+        only = HighSchool.objects.filter(pk=self.inactive.pk)
         with campus_context(self.a):
-            form = self._form({'highschool': str(self.foreign.pk)})
-            self.assertFalse(form.is_valid())
-            self.assertIn('highschool', form.errors)
-
-    @override_settings(MULTI_CAMPUS=True)
-    def test_multi_campus_own_school_passes_field_validation(self):
-        with campus_context(self.a):
-            form = self._form({'highschool': str(self.mine.pk)})
+            form = HSAdminTranscriptUploadForm(only)
+            self.assertEqual(list(form.fields['highschool'].queryset), [self.inactive])
+            form = HSAdminTranscriptUploadForm(
+                only, {'highschool': str(self.inactive.pk)})
             form.is_valid()
             self.assertNotIn('highschool', form.errors)
 
-    @override_settings(MULTI_CAMPUS=False)
-    def test_single_campus_offers_campus_linked_active_schools(self):
+    @override_settings(MULTI_CAMPUS=True)
+    def test_unmanaged_school_post_is_rejected(self):
+        stranger = _hs('Stranger', self.a)
         with campus_context(self.a):
-            qs = self._form().fields['highschool'].queryset
-            self.assertEqual(list(qs), [self.mine])
+            form = self._form({'highschool': str(stranger.pk)})
+            self.assertFalse(form.is_valid())
+            self.assertIn('highschool', form.errors)
+
+    @override_settings(MULTI_CAMPUS=False)
+    def test_single_campus_offers_every_managed_school(self):
+        qs = self._form().fields['highschool'].queryset
+        self.assertEqual(
+            {h.pk for h in qs}, {self.mine.pk, self.foreign.pk, self.inactive.pk})
