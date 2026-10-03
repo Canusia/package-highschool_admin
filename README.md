@@ -189,6 +189,30 @@ dashboard "pending recommendation" page-message.
 
 ---
 
+## Configuration — which class sections an HS admin sees
+
+The Classes list and the class-section detail page both ask
+`services/section_scope.py::visible_sections(request)`, so a listed section always opens
+and an unlisted one always 404s (#3). Pick a rule without forking either view:
+
+```python
+# settings.py — built-in rules
+MY_CE['highschool_admin'] = {'class_section_scope': 'hosted_or_own_students'}
+```
+
+| Rule | Sections shown |
+|---|---|
+| `hosted` (default) | Sections hosted at the admin's high schools. |
+| `hosted_or_own_students` | Those, plus sections the admin's own students are registered in (any status). This is for consortium enrollment, where a student takes a course hosted by another school. |
+
+For any other rule, ship a tenant override. It takes precedence over the setting:
+
+```python
+# <TENANT_SERVICES_APP>/services/highschool_admin.py
+def visible_sections(request, highschools):
+    return ClassSection.objects.filter(...)
+```
+
 ## Porting `page_messages` to a MyCE tenant
 
 `highschool_admin/page_messages.py` ships four dashboard/future-sections message **providers**:

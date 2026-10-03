@@ -7,7 +7,8 @@ from cis.menu import draw_menu
 from cis.settings.highschool_admin_portal import highschool_admin_portal as portal_lang
 from cis.utils import registration_terms, active_term
 
-from .utils import get_user_highschools, get_hsadmin_menu
+from ..services.section_scope import visible_sections
+from .utils import get_hsadmin_menu
 
 
 def class_section(request, record_id):
@@ -15,12 +16,13 @@ def class_section(request, record_id):
     menu = draw_menu(get_hsadmin_menu(), 'classes', '', 'highschool_admin')
 
     class_section_info = get_object_or_404(ClassSection, pk=record_id)
-    students_in_class = class_section_info.get_students()
 
-    highschools = get_user_highschools(request)
-
-    if class_section_info.highschool.id not in highschools.values_list('id', flat=True):
+    # The list and this guard share one predicate, so a listed section always
+    # opens and an unlisted one always 404s (#3).
+    if not visible_sections(request).filter(pk=class_section_info.pk).exists():
         return HttpResponseNotFound('Class section not found')
+
+    students_in_class = class_section_info.get_students()
 
     if request.GET.get('action') == 'download_roster_pdf':
         return class_section_info.download_roster_pdf()

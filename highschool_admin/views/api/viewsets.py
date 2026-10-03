@@ -328,15 +328,15 @@ class ClassSectionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [HSADMIN_user_only]
 
     def get_queryset(self):
-        highschools = get_user_highschools(self.request)
+        from ...services.section_scope import visible_sections
+
         term_id = self.request.GET.get('term', str(active_term().id)).strip()
 
         if term_id == '-1' or term_id == '':
             term_id = None
 
-        records = ClassSection.objects.filter(
-            highschool__in=highschools
-        )
+        # Same predicate as the detail page's guard (#3); see services/section_scope.py.
+        records = visible_sections(self.request)
 
         if term_id:
             records = records.filter(term__id=term_id)
