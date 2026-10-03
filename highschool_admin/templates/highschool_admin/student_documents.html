@@ -1,0 +1,105 @@
+{% extends "highschool_admin/base_hsadmin.html" %}
+{% load static %}
+
+{% block title %}Upload Student Documents{% endblock %}
+
+{% block page_header %}
+<h1 class="h3 text-gray-800">Upload Student Documents</h1>
+<p class="text-muted mb-1">
+  Attach a file (for example a transcript) to each student for the term. Files are filed
+  per student, once per term, not once per course. To send the college a file for your
+  whole school instead, use <a href="{% url 'highschool_admin:transcripts' %}">Transcripts</a>.
+</p>
+{% include "highschool_admin/partials/_breadcrumb.html" with page_name="Upload Student Documents" %}
+{% endblock %}
+
+{% block content %}
+<div class="card border-top-0">
+  <div class="card-body">
+    <div class="card mb-3">
+      <div class="card-body bg-gray-200">
+        <form method="get" class="form-inline" id="frm_student_docs_filter">
+          <label class="mr-2" for="id_term">Term</label>
+          <select name="term" id="id_term" class="form-control mr-3" onchange="this.form.submit()">
+            {% for t in terms %}
+              <option value="{{ t.id }}" {% if term and t.id == term.id %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-check mr-3">
+            <input class="form-check-input" type="checkbox" name="all" value="1" id="id_all"
+                   {% if include_all %}checked{% endif %} onchange="this.form.submit()">
+            <label class="form-check-label" for="id_all">Include students not registered this term</label>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if not term %}
+      <div class="alert alert-info">Choose a term to begin.</div>
+    {% else %}
+    <div id="student-docs-config" style="display:none"
+         data-upload-url="{% url 'highschool_admin:upload_student_document' %}"
+         data-term="{{ term.id }}"
+         data-csrf="{{ csrf_token }}"></div>
+
+    <div class="form-row align-items-end mb-3">
+      <div class="col-md-4">
+        <label for="id_document_type">Document type</label>
+        <select id="id_document_type" class="form-control">
+          {% if document_types %}<option value="">Select type</option>{% endif %}
+          {% for t in document_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input type="search" id="id_student_filter" class="form-control" placeholder="Filter students">
+      </div>
+      <div class="col-md-4 text-right">
+        <button type="button" id="btn_upload_selected" class="btn btn-primary">
+          <i class="fas fa-upload"></i>&nbsp;Upload selected files
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped" id="tbl_student_docs">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>High School</th>
+            <th>Already uploaded this term</th>
+            <th>File</th>
+            <th>Note (optional)</th>
+            <th><span class="sr-only">Status</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr data-student="{{ row.student.id }}">
+            <td class="cv-name">
+              <a href="{% url 'highschool_admin:student' row.student.id %}#support_docs">
+                {{ row.student.user.last_name }}, {{ row.student.user.first_name }}</a>
+            </td>
+            <td>{{ row.student.highschool.name }}</td>
+            <td class="small">
+              {% for doc in row.documents %}
+                {{ doc.document_type|default:"Document" }}: {{ doc.filename }}{% if not forloop.last %}<br>{% endif %}
+              {% empty %}<span class="text-muted">None</span>{% endfor %}
+            </td>
+            <td><input type="file" class="form-control-file doc-file"></td>
+            <td><input type="text" class="form-control form-control-sm doc-note" maxlength="500"></td>
+            <td class="doc-status small"></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-muted">
+            No students{% if not include_all %} registered this term{% endif %} at your school(s).
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="{% static 'highschool_admin/js/student_documents.js' %}"></script>
+{% endblock %}

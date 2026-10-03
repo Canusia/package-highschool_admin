@@ -38,6 +38,12 @@ from .dashboard import (
     manage_password,
 )
 
+# Bulk per-student document upload (#6)
+from .student_documents import (
+    student_documents,
+    upload_student_document,
+)
+
 # Student views
 from .students import (
     student,

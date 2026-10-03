@@ -213,6 +213,20 @@ def visible_sections(request, highschools):
     return ClassSection.objects.filter(...)
 ```
 
+## Student documents vs. school transcripts
+
+- **Upload Student Documents** (`/highschool_admin/student-documents/`, #6): files attached to
+  an individual student for a term, stored as `StudentSupportingDocument` (the same model and form
+  as the student page's Supporting Documents tab). Pick a term and a document type once, then
+  attach one file per student. Each file uploads in its own request, and every upload is checked
+  against the admin's own schools. The document types are the CE-configured `support_docs` /
+  `DocumentType` vocabulary.
+- **Transcripts** (`/highschool_admin/transcripts/`, #15): files for the school as a whole
+  (`HighSchoolTranscript`, keyed to a high school, with no student).
+
+Both pages explain the difference and link to each other. The sidebar label comes from the
+tenant's `cis.settings.menu`.
+
 ## Porting `page_messages` to a MyCE tenant
 
 `highschool_admin/page_messages.py` ships four dashboard/future-sections message **providers**:

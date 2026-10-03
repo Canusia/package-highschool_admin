@@ -27,6 +27,8 @@ from .views import (
     student,
     students,
     student_notes,
+    student_documents,
+    upload_student_document,
     # Classes
     class_section,
     classes,
@@ -123,6 +125,9 @@ urlpatterns = [
     path('registrations/term', hsadmin_view(get_registrations_for_term), name='registrations_for_term'),
     path('personnel/', hsadmin_view(personnel), name='personnel'),
     path('students/', hsadmin_view(students), name='students'),
+    path('student-documents/', hsadmin_view(student_documents), name='student_documents'),
+    path('student-documents/upload', hsadmin_view(upload_student_document),
+         name='upload_student_document'),
     path('transcripts/', hsadmin_view(transcripts), name='transcripts'),
     path('transcripts/get', hsadmin_view(get_transcripts), name='get_transcripts'),
     path('transcripts/upload', hsadmin_view(upload_transcript), name='upload_transcript'),

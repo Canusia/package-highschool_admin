@@ -39,6 +39,11 @@
                 <div class="card mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Send a File to the College</h5>
+                        <p class="alert alert-secondary small" id="school-vs-student-files">
+                            Files here are for your <strong>school as a whole</strong>. To attach a
+                            transcript or other document to an individual student, use
+                            <a href="{% url 'highschool_admin:student_documents' %}">Upload Student Documents</a>.
+                        </p>
                         <form id="frm_upload_transcript" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             {{ upload_form|crispy }}

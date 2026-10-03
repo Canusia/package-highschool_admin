@@ -44,6 +44,11 @@
      data-pending-pay-type-url="{% url 'highschool_admin:get_pending_pay_type' %}"
      style="display: none;"></div>
 
+<div class="text-right mb-2">
+    <a class="btn btn-sm btn-primary" href="{% url 'highschool_admin:student_documents' %}">
+        <i class="fas fa-upload"></i>&nbsp;Upload Student Documents
+    </a>
+</div>
 <ul class="nav nav-tabs">
     {% if tab_setting.show_recommendation %}
     <li class="nav-item">
