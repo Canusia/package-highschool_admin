@@ -20,6 +20,7 @@ from ..services.registration import (
     can_manage_recommendation, recommendation_registrations,
 )
 from .utils import get_current_hsadmin, get_user_highschools, get_hsadmin_menu
+from ..services.prereq_review import student_review, tracking_service
 from ..services.support_docs import support_docs_extra
 from ..settings.student_tabs import student_tabs
 
@@ -199,7 +200,18 @@ def student(request, record_id):
             'support_docs_extra': support_docs_extra(
                 record, support_doc_registrations, support_docs, support_docs_url),
             'tab_setting': student_tabs.tabs(),
+            'prereq_review': _prereq_review(record),
         })
+
+
+def _prereq_review(record):
+    """Read-only college review rows for the student page (#7); None = no tab."""
+    service = tracking_service()
+    if service is None:
+        return None
+    registrations = StudentRegistration.objects.filter(student=record).select_related(
+        'student', 'class_section__course', 'class_section__term')
+    return student_review(service, registrations)
 
 
 def students(request):
@@ -213,6 +225,7 @@ def students(request):
             'terms': Term.objects.all().order_by('-code'),
             'active_term': active_term(),
             'tab_setting': student_tabs.tabs(),
+            'prereq_review_enabled': tracking_service() is not None,
         })
 
 

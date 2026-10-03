@@ -42,6 +42,7 @@
 <div id="students-rec-config"
      data-update-registration-url="{% url 'highschool_admin:update_registration_status' %}"
      data-pending-pay-type-url="{% url 'highschool_admin:get_pending_pay_type' %}"
+     data-prereq-review="{% if prereq_review_enabled %}1{% endif %}"
      style="display: none;"></div>
 
 <div class="text-right mb-2">
@@ -208,6 +209,12 @@
                                         <th searchable="1" data-data="class_section.course.name" data-name="class_section.course.name">Course</th>
                                         <th data-data="status" data-name="status">Status</th>
                                         <th data-data="highschool.name" data-name="highschool.name">Reviewer</th>
+                                        {% if prereq_review_enabled %}
+                                        {# Set by the college, read-only here (#7). #}
+                                        <th class="cv-prereq">Transcript Received</th>
+                                        <th class="cv-prereq">Prereq Met</th>
+                                        <th class="cv-prereq">Test Score Needed</th>
+                                        {% endif %}
                                     </tr>
                                 </thead>
                             </table>

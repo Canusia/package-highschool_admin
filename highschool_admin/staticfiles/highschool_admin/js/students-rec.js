@@ -227,7 +227,23 @@ jQuery(document).ready(function ($) {
                         return hs;
                     }
                 }
-            ]
+            ].concat(prereqReviewColumns())
+        });
+    }
+
+    /* The college's prerequisite review, read-only (#7). Not orderable or
+     * searchable: the values live in Student.meta, not in ORM columns. */
+    function prereqReviewColumns() {
+        if ($('#students-rec-config').data('prereq-review') != 1) { return []; }
+        return ['transcript_received', 'prereq_met', 'test_score_needed'].map(function (flag) {
+            return {
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    var review = row.prereq_review || {};
+                    return $('<div>').text(review[flag] || '').html();
+                }
+            };
         });
     }
 

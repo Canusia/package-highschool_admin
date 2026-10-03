@@ -149,20 +149,31 @@ class HSAdminRegistrationSerializer(serializers.ModelSerializer):
     status_pretty = serializers.SerializerMethodField()
     pay_type_pretty = serializers.CharField(read_only=True)
     has_signed_student_agreement = serializers.CharField(read_only=True)
+    # The college's prerequisite review, read-only (#7); null without the tenant service.
+    prereq_review = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentRegistration
         fields = [
             'id', 'created_on', 'pay_type_pretty', 'has_signed_student_agreement',
-            'student', 'class_section', 'status_pretty', 'changed_on', 'reviewer'
+            'student', 'class_section', 'status_pretty', 'changed_on', 'reviewer',
+            'prereq_review',
         ]
         datatables_always_serialize = [
             'id', 'created_on', 'pay_type_pretty', 'has_signed_student_agreement',
-            'student', 'class_section', 'status_pretty', 'changed_on', 'reviewer'
+            'student', 'class_section', 'status_pretty', 'changed_on', 'reviewer',
+            'prereq_review',
         ]
 
     def get_status_pretty(self, obj):
         return obj.get_status
+
+    def get_prereq_review(self, obj):
+        from ...services.prereq_review import registration_flags, tracking_service
+        if 'prereq_service' not in self.context:
+            self.context['prereq_service'] = tracking_service()
+        service = self.context['prereq_service']
+        return registration_flags(service, obj) if service else None
 
 
 # =============================================================================

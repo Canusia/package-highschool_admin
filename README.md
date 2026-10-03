@@ -227,6 +227,16 @@ def visible_sections(request, highschools):
 Both pages explain the difference and link to each other. The sidebar label comes from the
 tenant's `cis.settings.menu`.
 
+## College prerequisite review (read-only)
+
+When the tenant ships a `prereq_tracking` service (`<TENANT_SERVICES_APP>/services/prereq_tracking.py`
+with `get_review(student, term)` and optionally `get_registration_review(student, term, registration)`
+and `test_score_display(value)`), HS admins see the college's review read-only (#7). It appears on
+the student page's **College Review** tab and as three columns on **Registrations by Term**:
+Transcript Received, Prereq Met (per class) and Test Score Needed. Only those three values are
+read. Anything else the service stores, such as CE notes and audit stamps, never reaches the
+portal. Without the service, nothing is shown.
+
 ## Porting `page_messages` to a MyCE tenant
 
 `highschool_admin/page_messages.py` ships four dashboard/future-sections message **providers**:

@@ -57,6 +57,11 @@
                 <li class="nav-item">
                     <a class="nav-link" data-toggle="tab" href="#support_docs"><i class="fa fa-file-upload"></i>&nbsp;&nbsp;Supporting Documents</a>
                 </li>
+                {% if prereq_review is not None %}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#prereq_review"><i class="fa fa-check-double"></i>&nbsp;&nbsp;College Review</a>
+                </li>
+                {% endif %}
                 {% if tab_setting.show_pay_type %}
                 <li class="nav-item">
                     <a class="nav-link" data-toggle="tab" href="#pay_type"><i class="fa fa-dollar-sign"></i>&nbsp;&nbsp;Pay Type</a>
@@ -318,6 +323,11 @@
                     </div>
                 </div>
 
+                {% if prereq_review is not None %}
+                <div class="tab-pane" id="prereq_review">
+                    {% include "highschool_admin/_prereq_review.html" %}
+                </div>
+                {% endif %}
                 <div class="tab-pane" id="support_docs">
                     <div class="row">
                         <div class="col-md-12">

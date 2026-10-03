@@ -201,6 +201,7 @@ class RegistrationViewSet(viewsets.ReadOnlyModelViewSet):
         records = records.select_related(
             'student__user',
             'class_section__course',
+            'class_section__term',  # prereq_review reads the registration's term (#7)
             'reviewer__user'
         )
         return records
