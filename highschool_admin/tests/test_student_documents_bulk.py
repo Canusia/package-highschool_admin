@@ -130,6 +130,12 @@ class BulkStudentDocumentsTests(_NoLoginHistoryMixin, TestCase):
         self.assertIn(url, self.client.get(reverse('highschool_admin:transcripts')).content.decode())
         self.assertIn(url, self.client.get(reverse('highschool_admin:students')).content.decode())
 
+    def test_page_can_be_framed(self):
+        # Opens in the portal's iframe modal; XFrameOptionsMiddleware must not deny it.
+        resp = self._page()
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn('X-Frame-Options', resp.headers)
+
     def test_other_roles_refused(self):
         self.client.force_login(self.registered.user)
         resp = self.client.get(reverse('highschool_admin:student_documents'))

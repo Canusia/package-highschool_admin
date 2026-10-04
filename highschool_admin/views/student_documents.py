@@ -13,6 +13,7 @@ high schools (get_user_highschools), not merely absent from the dropdown.
 """
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST
 
 from cis.forms.student import StudentSupportingDocumentForm
@@ -39,8 +40,13 @@ def document_types(term):
     return StudentSupportingDocumentForm._document_type_labels(term)
 
 
+@xframe_options_exempt
 def student_documents(request):
-    """Pick a term + document type, then attach files to students on one page."""
+    """Pick a term + document type, then attach files to students on one page.
+
+    Exempt from X-Frame-Options, like the student page, so it can open inside
+    the portal's iframe modal.
+    """
     term = _term_from(request.GET.get('term')) or active_term()
     include_all = request.GET.get('all') == '1'
     highschools = get_user_highschools(request)
