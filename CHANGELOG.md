@@ -3,6 +3,32 @@
 All notable changes to `package-highschool_admin` (the MyCE High School Admin portal).
 Releases are git-tag-driven; pin a tag in the host's `webapp/requirements.txt`.
 
+## v0.0.20 — 2026-10-04
+
+### Added
+- **Upload Student Documents** (#6). A term-scoped bulk page at
+  `/highschool_admin/student-documents/`: pick a term and a document type, then attach a file
+  per student. Files are stored as `StudentSupportingDocument` through cis's
+  `StudentSupportingDocumentForm`, the same path as the student page's Supporting Documents tab.
+  There is no model or cis change. One request per file, with inline per-row status. Each upload
+  is re-scoped server-side to the admin's high schools and must use a type from the CE
+  vocabulary, and `status` stays CE-only. The page can be framed (`xframe_options_exempt`). The
+  Transcripts page (school-level files) and the new page now explain the difference and link to
+  each other, and the Students page has an entry button.
+- **College prerequisite review, read-only** (#7). When the tenant ships a `prereq_tracking`
+  service, HS admins see a **College Review** tab on the student page and three columns on
+  Registrations by Term: Transcript Received, Prereq Met (per class) and Test Score Needed. Only
+  those three values are read; CE notes and audit stamps never reach the portal. Without the
+  service nothing is shown.
+- **Pluggable class-section scoping** (#3). The Classes list and the class-section detail guard
+  share `services/section_scope.visible_sections()`, so a listed section always opens. Choose
+  `MY_CE['highschool_admin']['class_section_scope'] = 'hosted_or_own_students'` for consortium
+  enrollment, or ship a tenant override (`visible_sections(request, highschools)` in
+  `<TENANT_SERVICES_APP>/services/highschool_admin.py`). The default, `hosted`, is unchanged.
+
+### Changed
+- The nested-import-prefix guard now scans the whole package, not just `tests/` (#4).
+
 ## v0.0.18 — 2026-10-01
 
 ### Added
